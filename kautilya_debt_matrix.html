@@ -1,0 +1,2320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KAUTILYA — The Debt Matrix</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --obsidian: #070707;
+    --surface: #0d0d0d;
+    --card: #111111;
+    --border: #1c1c1c;
+    --gold: #c9a84c;
+    --gold-dim: #8a6f2e;
+    --gold-glow: rgba(201,168,76,0.08);
+    --silver: #7a7a7a;
+    --white: #e2e2e2;
+    --white-dim: #5a5a5a;
+    --danger: #7a1f1f;
+    --danger-light: #c44;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--obsidian);
+    color: var(--white);
+    font-family: 'Inter', sans-serif;
+    font-weight: 300;
+    line-height: 1.7;
+    overflow-x: hidden;
+  }
+
+  /* GOLD SPINE — signature element running through the whole page */
+  .spine {
+    position: fixed;
+    left: 28px;
+    top: 0;
+    bottom: 0;
+    width: 1px;
+    background: linear-gradient(to bottom, transparent, var(--gold-dim) 10%, var(--gold-dim) 90%, transparent);
+    opacity: 0.4;
+    z-index: 10;
+  }
+
+  /* PROGRESS DOT ON SPINE */
+  .spine-dot {
+    position: fixed;
+    left: 23px;
+    top: 50%;
+    width: 11px;
+    height: 11px;
+    border-radius: 50%;
+    background: var(--gold);
+    z-index: 11;
+    transform: translateY(-50%);
+    box-shadow: 0 0 12px var(--gold);
+    transition: top 0.1s linear;
+  }
+
+  /* CHAPTER COUNTER */
+  .chapter-eyebrow {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.3em;
+    color: var(--gold);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    opacity: 0.8;
+  }
+
+  /* SECTIONS */
+  section {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 80px 60px 80px 80px;
+    position: relative;
+  }
+
+  section + section {
+    border-top: 1px solid var(--border);
+  }
+
+  /* HERO */
+  .hero {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 0 60px 0 100px;
+    max-width: none;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at 20% 50%, rgba(201,168,76,0.04) 0%, transparent 60%);
+    pointer-events: none;
+  }
+
+  .hero-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.5em;
+    color: var(--gold);
+    margin-bottom: 40px;
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .hero-label::after {
+    content: '';
+    display: block;
+    width: 60px;
+    height: 1px;
+    background: var(--gold);
+    opacity: 0.5;
+  }
+
+  .hero-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(48px, 7vw, 96px);
+    font-weight: 300;
+    line-height: 1.05;
+    color: var(--white);
+    margin-bottom: 32px;
+    max-width: 800px;
+  }
+
+  .hero-title em {
+    font-style: italic;
+    color: var(--gold);
+  }
+
+  .hero-subtitle {
+    font-size: 15px;
+    color: var(--silver);
+    max-width: 500px;
+    line-height: 1.8;
+    margin-bottom: 60px;
+  }
+
+  .hero-stat-row {
+    display: flex;
+    gap: 60px;
+    flex-wrap: wrap;
+  }
+
+  .hero-stat { display: flex; flex-direction: column; gap: 6px; }
+
+  .hero-stat-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 36px;
+    font-weight: 600;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .hero-stat-label {
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--silver);
+    text-transform: uppercase;
+  }
+
+  /* SECTION HEADINGS */
+  h2 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(32px, 4vw, 54px);
+    font-weight: 300;
+    line-height: 1.15;
+    margin-bottom: 28px;
+    color: var(--white);
+  }
+
+  h2 .gold { color: var(--gold); }
+  h2 em { font-style: italic; }
+
+  h3 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 26px;
+    font-weight: 400;
+    color: var(--white);
+    margin-bottom: 16px;
+    margin-top: 40px;
+  }
+
+  p {
+    font-size: 15px;
+    color: #aaa;
+    margin-bottom: 20px;
+    line-height: 1.85;
+  }
+
+  p strong { color: var(--white); font-weight: 500; }
+  p em { color: var(--gold); font-style: italic; }
+
+  /* CALLOUT BOX — big data moment */
+  .callout {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--gold);
+    padding: 28px 32px;
+    margin: 36px 0;
+    position: relative;
+  }
+
+  .callout-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 64px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    display: block;
+  }
+
+  .callout-label {
+    font-size: 12px;
+    letter-spacing: 0.2em;
+    color: var(--silver);
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .callout-body {
+    font-size: 15px;
+    color: #999;
+    margin-top: 14px;
+    line-height: 1.7;
+  }
+
+  /* COUNTRY DEBT BARS */
+  .debt-bars { margin: 36px 0; }
+
+  .debt-bar-row {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 14px;
+  }
+
+  .debt-bar-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--silver);
+    width: 70px;
+    flex-shrink: 0;
+    letter-spacing: 0.05em;
+  }
+
+  .debt-bar-track {
+    flex: 1;
+    height: 6px;
+    background: var(--border);
+    position: relative;
+    border-radius: 1px;
+  }
+
+  .debt-bar-fill {
+    height: 100%;
+    background: var(--gold);
+    border-radius: 1px;
+    transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
+    width: 0;
+  }
+
+  .debt-bar-fill.animate { /* triggered by JS */ }
+
+  .debt-bar-value {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    width: 90px;
+    flex-shrink: 0;
+    text-align: right;
+  }
+
+  .debt-vs-gdp {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin: 36px 0;
+    font-family: 'Space Mono', monospace;
+  }
+
+  .dvg-box {
+    padding: 28px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .dvg-box.debt { background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.2); }
+  .dvg-box.gdp { background: var(--card); border: 1px solid var(--border); }
+
+  .dvg-number { font-size: 40px; font-weight: 700; }
+  .dvg-box.debt .dvg-number { color: var(--gold); }
+  .dvg-box.gdp .dvg-number { color: var(--silver); }
+  .dvg-label { font-size: 10px; color: var(--silver); letter-spacing: 0.2em; text-transform: uppercase; }
+  .dvg-sub { font-size: 11px; color: #555; margin-top: 4px; }
+
+  .ratio-line {
+    grid-column: 1 / -1;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 13px;
+    color: var(--silver);
+  }
+
+  .ratio-line strong { color: var(--danger-light); font-size: 22px; }
+
+  /* FLOW DIAGRAM — for pre-1694 debt cycle */
+  .flow {
+    display: flex;
+    align-items: flex-start;
+    gap: 0;
+    margin: 36px 0;
+    flex-wrap: wrap;
+  }
+
+  .flow-node {
+    flex: 1;
+    min-width: 140px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px 16px;
+    text-align: center;
+    position: relative;
+  }
+
+  .flow-node-icon { font-size: 28px; margin-bottom: 10px; }
+  .flow-node-title { font-size: 12px; font-weight: 600; color: var(--white); letter-spacing: 0.05em; }
+  .flow-node-sub { font-size: 11px; color: var(--silver); margin-top: 6px; line-height: 1.4; }
+
+  .flow-arrow {
+    display: flex;
+    align-items: center;
+    padding: 0 4px;
+    padding-top: 30px;
+    color: var(--gold-dim);
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+
+  /* TIMELINE */
+  .timeline { margin: 40px 0; }
+
+  .timeline-item {
+    display: flex;
+    gap: 24px;
+    margin-bottom: 0;
+    position: relative;
+  }
+
+  .timeline-item::before {
+    content: '';
+    position: absolute;
+    left: 35px;
+    top: 52px;
+    bottom: -20px;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .timeline-item:last-child::before { display: none; }
+
+  .timeline-left {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    padding-top: 12px;
+  }
+
+  .timeline-year {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    width: 48px;
+    text-align: center;
+    letter-spacing: 0.05em;
+  }
+
+  .timeline-dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid var(--gold);
+    background: var(--obsidian);
+    flex-shrink: 0;
+  }
+
+  .timeline-dot.filled { background: var(--gold); }
+
+  .timeline-content {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px 24px;
+    margin-bottom: 20px;
+    flex: 1;
+  }
+
+  .timeline-content h4 {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .timeline-content p {
+    font-size: 13px;
+    color: var(--silver);
+    margin: 0;
+    line-height: 1.6;
+  }
+
+  /* WAR COST GRID */
+  .cost-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    margin: 36px 0;
+  }
+
+  .cost-item {
+    background: var(--card);
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .cost-item-icon { font-size: 22px; }
+  .cost-item-title { font-size: 12px; font-weight: 600; color: var(--white); }
+  .cost-item-desc { font-size: 11px; color: var(--silver); line-height: 1.5; }
+
+  /* PATERSON TRICK BOX */
+  .trick-split {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin: 36px 0;
+  }
+
+  .trick-old {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 28px;
+  }
+
+  .trick-new {
+    background: rgba(201,168,76,0.05);
+    border: 1px solid rgba(201,168,76,0.25);
+    padding: 28px;
+  }
+
+  .trick-tag {
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+  }
+
+  .trick-old .trick-tag { color: var(--silver); }
+  .trick-new .trick-tag { color: var(--gold); }
+
+  .trick-body { font-size: 14px; color: #999; line-height: 1.7; }
+  .trick-body strong { color: var(--white); }
+
+  /* INHERITANCE CHAIN */
+  .chain {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    margin: 36px 0;
+    max-width: 400px;
+  }
+
+  .chain-link {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-bottom: none;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .chain-link:last-child { border-bottom: 1px solid var(--border); }
+
+  .chain-link-left { font-size: 13px; color: #999; }
+  .chain-link-right {
+    font-family: 'Space Mono', monospace;
+    font-size: 12px;
+    color: var(--gold);
+  }
+
+  .chain-arrow {
+    text-align: center;
+    color: var(--border);
+    font-size: 18px;
+    line-height: 1;
+    position: relative;
+    left: 0;
+  }
+
+  /* BANK OF ENGLAND STRUCTURE */
+  .struct {
+    margin: 36px 0;
+    position: relative;
+  }
+
+  .struct-top {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 20px 28px;
+    text-align: center;
+  }
+
+  .struct-top-title {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    color: var(--gold);
+  }
+
+  .struct-top-sub { font-size: 12px; color: var(--silver); margin-top: 6px; }
+
+  .struct-connector {
+    display: flex;
+    justify-content: space-around;
+    padding: 0 40px;
+  }
+
+  .struct-connector-line {
+    width: 1px;
+    height: 30px;
+    background: var(--border);
+  }
+
+  .struct-row {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+  }
+
+  .struct-node {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 16px;
+    text-align: center;
+  }
+
+  .struct-node-title { font-size: 12px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+  .struct-node-body { font-size: 11px; color: var(--silver); line-height: 1.4; }
+
+  /* FIVE STEPS */
+  .steps { margin: 36px 0; }
+
+  .step {
+    display: flex;
+    gap: 20px;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+
+  .step:last-child { border-bottom: none; }
+
+  .step-num {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 48px;
+    font-weight: 700;
+    color: var(--border);
+    line-height: 1;
+    flex-shrink: 0;
+    width: 50px;
+    text-align: right;
+  }
+
+  .step-content { flex: 1; padding-top: 8px; }
+  .step-title { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+  .step-body { font-size: 13px; color: var(--silver); line-height: 1.6; }
+
+  /* ROTHSCHILD MAP */
+  .roth-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    margin: 36px 0;
+  }
+
+  .roth-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 20px 14px;
+    text-align: center;
+  }
+
+  .roth-card-city {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+
+  .roth-card-name { font-size: 13px; color: var(--white); margin-bottom: 6px; }
+  .roth-card-role { font-size: 11px; color: var(--silver); }
+
+  /* BOND SPLIT VISUAL */
+  .bond-split { margin: 36px 0; }
+
+  .bond-before {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 24px;
+    margin-bottom: 2px;
+  }
+
+  .bond-after {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 2px;
+  }
+
+  .bond-mini {
+    background: rgba(201,168,76,0.12);
+    border: 1px solid rgba(201,168,76,0.2);
+    aspect-ratio: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    color: var(--gold);
+  }
+
+  .bond-label {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--silver);
+    letter-spacing: 0.1em;
+    margin-bottom: 10px;
+  }
+
+  .bond-main-number {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 40px;
+    color: var(--white);
+    font-weight: 600;
+  }
+
+  /* DOMINO */
+  .domino-row {
+    display: flex;
+    align-items: flex-end;
+    gap: 8px;
+    margin: 36px 0;
+    flex-wrap: wrap;
+  }
+
+  .domino {
+    background: var(--card);
+    border: 1px solid var(--border);
+    width: 60px;
+    padding: 12px 8px;
+    text-align: center;
+    font-size: 10px;
+    color: var(--silver);
+    position: relative;
+    transition: transform 0.3s ease;
+  }
+
+  .domino.falling {
+    transform: rotate(80deg);
+    transform-origin: bottom left;
+    opacity: 0.3;
+  }
+
+  .domino-flag { font-size: 22px; margin-bottom: 6px; }
+  .domino-arrow { color: var(--gold-dim); font-size: 16px; padding-bottom: 8px; }
+
+  /* EAST INDIA TRAP */
+  .trap-flow {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 36px 0;
+  }
+
+  .trap-step {
+    display: flex;
+    align-items: stretch;
+    gap: 2px;
+  }
+
+  .trap-step-label {
+    background: rgba(201,168,76,0.08);
+    border: 1px solid rgba(201,168,76,0.2);
+    padding: 16px 20px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.1em;
+    width: 130px;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .trap-step-body {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 16px 20px;
+    font-size: 13px;
+    color: #999;
+    flex: 1;
+    line-height: 1.6;
+  }
+
+  .trap-step-body strong { color: var(--white); }
+
+  /* MONEY CREATION MECHANISM */
+  .mechanism {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 36px 0;
+  }
+
+  .mech-step {
+    display: grid;
+    grid-template-columns: 44px 1fr;
+    gap: 2px;
+  }
+
+  .mech-num {
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    color: var(--gold);
+  }
+
+  .mech-content {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 18px 20px;
+  }
+
+  .mech-title { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
+  .mech-body { font-size: 12px; color: var(--silver); line-height: 1.6; }
+  .mech-note {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    margin-top: 8px;
+    padding: 8px 12px;
+    background: rgba(201,168,76,0.06);
+    border-left: 2px solid var(--gold);
+  }
+
+  /* IMF CONDITIONS */
+  .conditions { margin: 36px 0; }
+
+  .condition {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 20px 0;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .condition:last-child { border-bottom: none; }
+
+  .condition-num {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--danger-light);
+    flex-shrink: 0;
+    padding-top: 2px;
+  }
+
+  .condition-text { font-size: 14px; color: #999; line-height: 1.6; }
+  .condition-text strong { color: var(--white); }
+  .condition-impact {
+    font-size: 12px;
+    color: var(--danger-light);
+    margin-top: 6px;
+    font-style: italic;
+  }
+
+  /* GOLD PLEDGE — the 67 tonnes moment */
+  .gold-box {
+    background: var(--obsidian);
+    border: 1px solid rgba(201,168,76,0.3);
+    padding: 48px;
+    margin: 36px 0;
+    text-align: center;
+    position: relative;
+  }
+
+  .gold-box::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, rgba(201,168,76,0.05) 0%, transparent 70%);
+    pointer-events: none;
+  }
+
+  .gold-tonnes {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 96px;
+    font-weight: 700;
+    color: var(--gold);
+    line-height: 1;
+    display: block;
+  }
+
+  .gold-unit {
+    font-family: 'Space Mono', monospace;
+    font-size: 14px;
+    letter-spacing: 0.3em;
+    color: var(--gold-dim);
+    text-transform: uppercase;
+    margin-top: 8px;
+  }
+
+  .gold-context {
+    font-size: 14px;
+    color: var(--silver);
+    margin-top: 24px;
+    max-width: 400px;
+    margin-left: auto;
+    margin-right: auto;
+    line-height: 1.7;
+  }
+
+  /* PATTERN REPEATS */
+  .pattern-cards {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2px;
+    margin: 36px 0;
+  }
+
+  .pattern-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 24px 20px;
+  }
+
+  .pattern-card-year {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--gold);
+    margin-bottom: 8px;
+    letter-spacing: 0.1em;
+  }
+
+  .pattern-card-country {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+
+  .pattern-card-body { font-size: 12px; color: var(--silver); line-height: 1.6; }
+
+  /* EMI CALCULATION */
+  .emi-calc {
+    background: var(--card);
+    border: 1px solid var(--border);
+    margin: 36px 0;
+    overflow: hidden;
+  }
+
+  .emi-header {
+    background: rgba(201,168,76,0.06);
+    padding: 16px 24px;
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .emi-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 16px 24px;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .emi-row:last-child { border-bottom: none; }
+  .emi-row-label { color: var(--silver); }
+  .emi-row-value { font-family: 'Space Mono', monospace; color: var(--white); }
+  .emi-row.danger .emi-row-value { color: var(--danger-light); }
+  .emi-row.gold .emi-row-value { color: var(--gold); }
+
+  /* BOND HOLDERS */
+  .holders {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+    margin: 36px 0;
+  }
+
+  .holder-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 28px;
+  }
+
+  .holder-box-title {
+    font-family: 'Space Mono', monospace;
+    font-size: 10px;
+    color: var(--gold);
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .holder-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 13px;
+  }
+
+  .holder-item:last-child { border-bottom: none; }
+  .holder-item-name { color: var(--silver); }
+  .holder-item-action { color: var(--white); font-style: italic; }
+
+  /* 4 ARCHITECTS SUMMARY */
+  .architects {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 2px;
+    margin: 36px 0;
+  }
+
+  .arch-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 28px 24px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .arch-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 2px;
+    background: var(--gold);
+    opacity: 0.4;
+  }
+
+  .arch-year {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    color: var(--gold-dim);
+    letter-spacing: 0.1em;
+    margin-bottom: 12px;
+  }
+
+  .arch-name {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 28px;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .arch-action {
+    font-size: 13px;
+    color: var(--gold);
+    margin-bottom: 16px;
+    font-style: italic;
+  }
+
+  .arch-body { font-size: 12px; color: var(--silver); line-height: 1.6; }
+
+  /* WHAT TO DO */
+  .todo-list { margin: 36px 0; }
+
+  .todo-item {
+    display: flex;
+    gap: 20px;
+    padding: 24px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+
+  .todo-item:last-child { border-bottom: none; }
+
+  .todo-icon {
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--gold);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 20px;
+    color: var(--gold);
+    flex-shrink: 0;
+  }
+
+  .todo-content { flex: 1; }
+  .todo-title { font-size: 15px; font-weight: 600; color: var(--white); margin-bottom: 8px; }
+  .todo-body { font-size: 13px; color: var(--silver); line-height: 1.7; }
+
+  /* FINAL CLOSING */
+  .closing {
+    text-align: center;
+    padding: 120px 60px;
+    max-width: none;
+    border-top: 1px solid var(--border);
+  }
+
+  .closing-logo {
+    font-family: 'Space Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.5em;
+    color: var(--gold);
+    margin-bottom: 40px;
+    text-transform: uppercase;
+  }
+
+  .closing-statement {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(28px, 4vw, 52px);
+    font-weight: 300;
+    color: var(--white);
+    max-width: 700px;
+    margin: 0 auto 40px;
+    line-height: 1.2;
+  }
+
+  .closing-statement em { color: var(--gold); font-style: italic; }
+
+  .closing-sub {
+    font-size: 13px;
+    color: var(--silver);
+    letter-spacing: 0.1em;
+  }
+
+  /* REVEAL ANIMATIONS */
+  .reveal {
+    opacity: 0;
+    transform: translateY(24px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: none;
+  }
+
+  .reveal-delay-1 { transition-delay: 0.1s; }
+  .reveal-delay-2 { transition-delay: 0.2s; }
+  .reveal-delay-3 { transition-delay: 0.3s; }
+
+  /* QUOTE */
+  .quote {
+    border-left: 2px solid var(--gold);
+    padding: 16px 24px;
+    margin: 36px 0;
+    font-family: 'Cormorant Garamond', serif;
+    font-size: 22px;
+    font-style: italic;
+    color: var(--white);
+    line-height: 1.5;
+  }
+
+  .quote em { color: var(--gold); font-style: normal; }
+
+  /* UTILITY */
+  .gold-text { color: var(--gold); }
+  .silver-text { color: var(--silver); }
+  .mono { font-family: 'Space Mono', monospace; }
+  .danger-text { color: var(--danger-light); }
+
+  .divider {
+    height: 1px;
+    background: linear-gradient(to right, transparent, var(--border), transparent);
+    margin: 40px 0;
+  }
+
+  .label-tag {
+    display: inline-block;
+    font-family: 'Space Mono', monospace;
+    font-size: 9px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    color: var(--silver);
+    margin-bottom: 20px;
+  }
+
+  .label-tag.gold {
+    border-color: rgba(201,168,76,0.3);
+    color: var(--gold);
+  }
+
+  @media (max-width: 700px) {
+    section { padding: 60px 24px 60px 48px; }
+    .spine { left: 16px; }
+    .spine-dot { left: 11px; }
+    .roth-grid { grid-template-columns: repeat(3, 1fr); }
+    .architects { grid-template-columns: 1fr; }
+    .holders { grid-template-columns: 1fr; }
+    .pattern-cards { grid-template-columns: 1fr; }
+    .trick-split { grid-template-columns: 1fr; }
+    .debt-vs-gdp { grid-template-columns: 1fr; }
+    .hero { padding: 60px 24px 60px 48px; }
+    .gold-tonnes { font-size: 64px; }
+    .struct-row { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="spine"></div>
+<div class="spine-dot" id="spineDot"></div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- HERO -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="hero">
+  <div class="hero-label">KAUTILYA — INTELLIGENCE BRIEF</div>
+  <h1 class="hero-title">The <em>Debt Matrix</em><br>Complete Deconstruction</h1>
+  <p class="hero-subtitle">How four architects across three centuries built a debt system so complete, so structurally embedded — that escaping it would require dismantling money itself.</p>
+  <div class="hero-stat-row">
+    <div class="hero-stat">
+      <span class="hero-stat-number">$340T</span>
+      <span class="hero-stat-label">Global Debt</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-number">$100T</span>
+      <span class="hero-stat-label">Global GDP</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-number">3×</span>
+      <span class="hero-stat-label">Debt / Income Ratio</span>
+    </div>
+    <div class="hero-stat">
+      <span class="hero-stat-number">330yrs</span>
+      <span class="hero-stat-label">System Age</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 1 — THE PARADOX -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section id="s1">
+  <div class="chapter-eyebrow reveal">Chapter 01 — The Paradox</div>
+  <h2 class="reveal">The Number That <em>Should Not Exist</em></h2>
+
+  <p class="reveal">The video opens with a fact that collapses the moment you sit with it. The world carries <strong>$340 trillion in debt</strong> — yet the entire global economy produces only <strong>$100 trillion</strong> per year. The debt is three times the world's total annual income. This is not a crisis. This is the intended state.</p>
+
+  <div class="debt-vs-gdp reveal">
+    <div class="dvg-box debt">
+      <span class="dvg-number">$340T</span>
+      <div class="dvg-label">Total Global Debt</div>
+      <div class="dvg-sub">IIF Global Debt Monitor</div>
+    </div>
+    <div class="dvg-box gdp">
+      <span class="dvg-number">$100T</span>
+      <div class="dvg-label">Total Global GDP</div>
+      <div class="dvg-sub">Annual World Output</div>
+    </div>
+    <div class="ratio-line">
+      <span>Debt-to-Income Ratio</span>
+      <strong>340%</strong>
+    </div>
+  </div>
+
+  <h3 class="reveal">Every Nation. Simultaneously.</h3>
+
+  <p class="reveal">The breakdown is not selective. Every major nation — including the ones that ostensibly lend money to others — is in debt at the same time:</p>
+
+  <div class="debt-bars reveal" id="debtBars">
+    <div class="debt-bar-row">
+      <div class="debt-bar-label">USA</div>
+      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="100"></div></div>
+      <div class="debt-bar-value">$38 Trillion</div>
+    </div>
+    <div class="debt-bar-row">
+      <div class="debt-bar-label">China</div>
+      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="34"></div></div>
+      <div class="debt-bar-value">$13 Trillion</div>
+    </div>
+    <div class="debt-bar-row">
+      <div class="debt-bar-label">Japan</div>
+      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="24"></div></div>
+      <div class="debt-bar-value">$9 Trillion</div>
+    </div>
+    <div class="debt-bar-row">
+      <div class="debt-bar-label">India</div>
+      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="16"></div></div>
+      <div class="debt-bar-value">₹170 Lakh Crore</div>
+    </div>
+    <div class="debt-bar-row">
+      <div class="debt-bar-label">Russia</div>
+      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="8"></div></div>
+      <div class="debt-bar-value">$450 Billion</div>
+    </div>
+  </div>
+
+  <p class="reveal">Note China — which lends money to developing nations through Belt and Road, which holds US Treasury bonds — is itself $13 trillion in debt. Russia, which operates outside most Western financial infrastructure, is still $450 billion in. <em>There are no exceptions.</em></p>
+
+  <div class="quote reveal">"Agar har desh karz mein hai — toh yeh paisa diya <em>kisne?</em>"<br><span style="font-size:14px; color: var(--silver); font-style: normal; font-family: Inter, sans-serif;">If every country is the borrower — who is the lender?</span></div>
+
+  <p class="reveal">This is not a rhetorical question. The answer destroys the conventional understanding of what money is. The money was not lent from some reserve of pre-existing wealth. It was <strong>created at the moment of borrowing</strong>. From nothing. This is the foundational mechanism — and it was built deliberately, over three centuries, by four people.</p>
+
+  <div class="callout reveal">
+    <span class="callout-number">4</span>
+    <div class="callout-label">Architects — 3 Centuries — 1 System</div>
+    <div class="callout-body">William Paterson (1694) → Nathan Rothschild (1815) → JP Morgan (1913) → Paul Volcker (1979). None of them conspired together. Each solved a specific problem in a way that benefited bankers. Each solution built upon the last. The system evolved through incentive, not conspiracy — which makes it far more permanent.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 2 — PRE-1694 WORLD -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section id="s2">
+  <div class="chapter-eyebrow reveal">Chapter 02 — Before The System</div>
+  <h2 class="reveal">The World <em>Before 1694</em> — When Debt Could Die</h2>
+
+  <p class="reveal">To understand what Paterson built, you must understand what existed before. In the pre-1694 world, the relationship between kings and money was direct, brutal, and temporary. There were no central banks. No bond markets. No paper currency backed by debt.</p>
+
+  <h3 class="reveal">How Kings Borrowed Money</h3>
+
+  <div class="flow reveal">
+    <div class="flow-node">
+      <div class="flow-node-icon">👑</div>
+      <div class="flow-node-title">King Needs Money</div>
+      <div class="flow-node-sub">War. Fort. Army. Daily operations of empire.</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="flow-node-icon">🏦</div>
+      <div class="flow-node-title">Goes to Rich Seth</div>
+      <div class="flow-node-sub">A wealthy merchant. Personal trust required. High risk for lender.</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="flow-node-icon">🤝</div>
+      <div class="flow-node-title">Promise Made</div>
+      <div class="flow-node-sub">"I will repay — with interest." No institution. Personal word.</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="flow-node-icon">⚖️</div>
+      <div class="flow-node-title">Two Outcomes</div>
+      <div class="flow-node-sub">Repaid: Seth recovers. Or: King refuses — Seth loses everything. King moves to next Seth.</div>
+    </div>
+  </div>
+
+  <p class="reveal">The critical feature of this system: <strong>debt had a natural endpoint.</strong> It was either repaid or it was canceled — through default, death, or refusal. Either way, the slate could be wiped clean. No debt was eternal. Kings occasionally imprisoned lenders to avoid repayment. The lender bore all the risk, and the system had no permanence.</p>
+
+  <div class="callout reveal">
+    <span class="callout-number" style="font-size:36px; color: var(--silver);">Pre-1694 Rule</span>
+    <div class="callout-body">Karz ka ek natural lifespan hota tha. Ya toh chuk jaata tha, ya mana kar diya jaata tha. Karz kabhi hamesha ke liye nahi hota tha. Yeh limitation — yeh natural death of debt — yahi thi woh cheez jo Paterson ne permanently remove kar di.</div>
+  </div>
+
+  <h3 class="reveal">Why England Was Desperate in 1691</h3>
+
+  <p class="reveal">England was fighting France. King William III needed money urgently. The treasury was empty — not because the king was personally poor (he had palaces and servants), but because <strong>the state's war machine had no fuel.</strong> The cost of 17th-century warfare was staggering:</p>
+
+  <div class="cost-grid reveal">
+    <div class="cost-item">
+      <div class="cost-item-icon">⚔️</div>
+      <div class="cost-item-title">Soldier Wages</div>
+      <div class="cost-item-desc">2–3 pounds per soldier per month. 500 soldiers = 1,000–1,500 pounds monthly. Every single month.</div>
+    </div>
+    <div class="cost-item">
+      <div class="cost-item-icon">🚢</div>
+      <div class="cost-item-title">Warships</div>
+      <div class="cost-item-desc">2–3 years to build. Thousands of pounds each. Naval war required a constant fleet.</div>
+    </div>
+    <div class="cost-item">
+      <div class="cost-item-icon">🔫</div>
+      <div class="cost-item-title">Weapons & Ammunition</div>
+      <div class="cost-item-desc">Guns, swords, gunpowder — ordered from factories. Cash upfront. No credit from manufacturers.</div>
+    </div>
+    <div class="cost-item">
+      <div class="cost-item-icon">🌾</div>
+      <div class="cost-item-title">Daily Supply</div>
+      <div class="cost-item-desc">Food for 500 men daily. Horses, donkeys, transport, tents, uniforms. Never stops.</div>
+    </div>
+    <div class="cost-item">
+      <div class="cost-item-icon">💰</div>
+      <div class="cost-item-title">Mercenaries</div>
+      <div class="cost-item-desc">Foreign soldiers for hire — the most expensive option. But often necessary for specialized warfare.</div>
+    </div>
+    <div class="cost-item">
+      <div class="cost-item-icon">🚫</div>
+      <div class="cost-item-title">No New Loans</div>
+      <div class="cost-item-desc">England had defaulted before. Rich merchants refused new loans. The trust was gone.</div>
+    </div>
+  </div>
+
+  <p class="reveal">England was at a dead end. Tax revenue was insufficient. Previous lenders had been burned — England had already defaulted on past loans. No new Seth would come forward. The kingdom needed a <em>structural solution</em> — not another personal loan from a merchant who could be refused or imprisoned.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 3 — WILLIAM PATERSON -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section id="s3">
+  <div class="chapter-eyebrow reveal">Chapter 03 — First Architect</div>
+  <h2 class="reveal">William Paterson — <em>1694</em><br>The Man Who Made Debt Immortal</h2>
+
+  <p class="reveal">William Paterson was a Scottish merchant — not a nobleman, not a banker of great standing. He had failed at business multiple times. He spent decades wandering, trying and failing to build wealth. He was nobody remarkable. Then in 1691, he had an idea that would define every government's finances for the next three centuries and beyond.</p>
+
+  <div class="trick-split reveal">
+    <div class="trick-old">
+      <div class="trick-tag">Old Thinking</div>
+      <div class="trick-body">Government borrows from a Seth. <strong>Principal must be repaid eventually.</strong> If not repaid, it's a default — a crisis, a failure, a rupture in the relationship. Debt is temporary.</div>
+    </div>
+    <div class="trick-new">
+      <div class="trick-tag">Paterson's Idea</div>
+      <div class="trick-body">Government borrows. <strong>Principal is never repaid. Ever.</strong> Only interest — paid forever. Not a failure. Not a crisis. A feature. Permanent income for the lender. Permanent obligation for the state.</div>
+    </div>
+  </div>
+
+  <h3 class="reveal">The Proposal — And the Masterstroke</h3>
+
+  <p class="reveal">Paterson approached the government with a proposal: he would organize a consortium of wealthy merchants. Together, they would lend the government <strong>1.2 million pounds</strong> — roughly $300 million in today's terms, over ₹2,000 crore. In return:</p>
+
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Principal is NEVER returned</div>
+        <div class="step-body">The 1.2 million pounds — the actual amount lent — would never be repaid. This was not the catch. This was the design. The merchants were not expecting it back.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">8% interest — forever</div>
+        <div class="step-body">Every year, the government would pay 8% of 1.2 million pounds in interest. Not for 10 years. Not for 50. Forever. You borrow ₹100. You pay ₹8 every year for eternity. You die, your son pays ₹8. His son pays ₹8.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Parliament — not the King — guarantees the interest</div>
+        <div class="step-body">This is the genius. Not the King who can die, be overthrown, or simply refuse. Parliament — the collective body of the ruling class — backed by the power to tax citizens — guarantees the interest payments. The King dies, Parliament continues. Government changes, Parliament continues. The guarantee is institutional, not personal.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">A new institution is created: Bank of England</div>
+        <div class="step-body">Merchants would not lend directly to the King — who could imprison them if they asked for repayment. Instead, a new entity would be created: the Bank of England. The world's first central bank. Merchants deposit gold into the Bank. The Bank uses that gold as collateral to lend to the government. The merchants are now protected by institutional architecture, not personal trust.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">Tax funds the interest — permanently</div>
+        <div class="step-body">Parliament's guarantee comes from its power to tax citizens. Every subject of England would effectively be paying interest to the merchant consortium — forever — without knowing it, without consenting to it. As long as the nation exists and taxes flow, the interest flows to the lenders.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout reveal">
+    <span class="callout-number">1694</span>
+    <div class="callout-label">Parliament approves. Bank of England established.</div>
+    <div class="callout-body">For the first time in human history, a nation's debt became permanent by design — not by accident, not by failure, but as a feature. The Bank of England, the world's first central bank, was founded to formalize this arrangement. The merchants deposited gold. The government received funds. And the citizens of England became, without ever voting for it, perpetual interest-payers to a private consortium.</div>
+  </div>
+
+  <h3 class="reveal">Paper Money — The Second Power</h3>
+
+  <p class="reveal">But Paterson's design had a second element — more dangerous than the first. The Bank of England was given the authority to <strong>print paper notes against the government's debt.</strong></p>
+
+  <p class="reveal">Before this moment, gold was money. You held gold — you were wealthy. No gold — no wealth. Paper meant nothing in itself.</p>
+
+  <p class="reveal">Now: the Bank would print paper notes. Each note stated: <em>"This note can be exchanged for gold at the Bank of England."</em> The notes were backed by the debt the government had taken on. The more the government borrowed, the more notes the Bank could print, the more paper money entered circulation.</p>
+
+  <div class="struct reveal">
+    <div class="struct-top">
+      <div class="struct-top-title">Bank of England</div>
+      <div class="struct-top-sub">World's First Central Bank — Established 1694</div>
+    </div>
+    <div class="struct-connector">
+      <div class="struct-connector-line"></div>
+      <div class="struct-connector-line"></div>
+      <div class="struct-connector-line"></div>
+    </div>
+    <div class="struct-row">
+      <div class="struct-node">
+        <div class="struct-node-title">Merchant Consortium</div>
+        <div class="struct-node-body">Deposit gold into the Bank. Receive 8% interest forever. Never recover principal. Sleep — earn.</div>
+      </div>
+      <div class="struct-node">
+        <div class="struct-node-title">Government</div>
+        <div class="struct-node-body">Receives 1.2M pounds. Fights the war. Pays 8% interest annually from tax revenue. Never repays principal.</div>
+      </div>
+      <div class="struct-node">
+        <div class="struct-node-title">Citizens / Taxpayers</div>
+        <div class="struct-node-body">Pay taxes. Those taxes fund the interest. They never voted for this. They are the permanent fuel of the system.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="reveal">Paterson's Template — Five Steps That Still Run Today</h3>
+
+  <div class="steps reveal">
+    <div class="step">
+      <div class="step-num">1</div>
+      <div class="step-content">
+        <div class="step-title">Government borrows</div>
+        <div class="step-body">The state takes a loan from the central bank or bond market.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">2</div>
+      <div class="step-content">
+        <div class="step-title">New money is printed against the debt</div>
+        <div class="step-body">Notes enter circulation, backed not by gold but by the promise of future repayment.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">3</div>
+      <div class="step-content">
+        <div class="step-title">Principal is NEVER repaid</div>
+        <div class="step-body">The original sum stays outstanding. Forever. It is rolled over, refinanced, restructured — but never eliminated.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">4</div>
+      <div class="step-content">
+        <div class="step-title">Interest is paid — always</div>
+        <div class="step-body">Funded by taxes. Every year. Without fail. The interest is the only obligation that is actually honored.</div>
+      </div>
+    </div>
+    <div class="step">
+      <div class="step-num">5</div>
+      <div class="step-content">
+        <div class="step-title">The cycle repeats — forever</div>
+        <div class="step-body">New debt is taken to fund old interest. New notes enter circulation. The money supply grows. The debt grows. The cycle is self-sustaining.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout reveal">
+    <span class="callout-number" style="font-size:32px;">331 Years</span>
+    <div class="callout-label">British Government Debt — Never Once Repaid</div>
+    <div class="callout-body">Paterson died in 1719. He never became particularly wealthy. But the system he designed in 1694 is still running in 2025. The British government has never, not once, repaid its sovereign debt. It only grew. The same template now operates in every nation on earth. What Paterson built was not a loan. It was a permanent institution.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 4 — NATHAN ROTHSCHILD -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section id="s4">
+  <div class="chapter-eyebrow reveal">Chapter 04 — Second Architect</div>
+  <h2 class="reveal">Nathan Rothschild — <em>1815</em><br>Making Default Impossible</h2>
+
+  <p class="reveal">Paterson's design had one exploitable weakness. The debt system was <em>national</em>. One country's merchants lent to one country's government. If that government defaulted, one set of lenders suffered. The rest of the world was unaffected. England's default was England's problem. France carried on.</p>
+
+  <p class="reveal">Nathan Rothschild — the London branch of the five-brother banking dynasty that controlled European capital — destroyed this limitation. He did not do it through conspiracy. He did it by solving a business problem in a way that made the entire global financial system permanently interconnected.</p>
+
+  <h3 class="reveal">The Five Brothers — Five Cities</h3>
+
+  <div class="roth-grid reveal">
+    <div class="roth-card">
+      <div class="roth-card-city">London</div>
+      <div class="roth-card-name">Nathan Rothschild</div>
+      <div class="roth-card-role">The most powerful. Mastermind of bond markets.</div>
+    </div>
+    <div class="roth-card">
+      <div class="roth-card-city">Paris</div>
+      <div class="roth-card-name">James Rothschild</div>
+      <div class="roth-card-role">French banking and government finance.</div>
+    </div>
+    <div class="roth-card">
+      <div class="roth-card-city">Frankfurt</div>
+      <div class="roth-card-name">Amschel Rothschild</div>
+      <div class="roth-card-role">German states and central European capital.</div>
+    </div>
+    <div class="roth-card">
+      <div class="roth-card-city">Vienna</div>
+      <div class="roth-card-name">Salomon Rothschild</div>
+      <div class="roth-card-role">Austrian Empire and Habsburg finance.</div>
+    </div>
+    <div class="roth-card">
+      <div class="roth-card-city">Naples</div>
+      <div class="roth-card-name">Carl Rothschild</div>
+      <div class="roth-card-role">Italian kingdoms and Mediterranean trade routes.</div>
+    </div>
+  </div>
+
+  <h3 class="reveal">The Bond Innovation — Democratizing Government Debt</h3>
+
+  <p class="reveal">Before Rothschild, government bonds were a rich man's instrument. A single bond was worth £10,000 — only twenty people in the entire country could afford one. If ten of them refused, the government couldn't raise sufficient capital. Fundraising took months of negotiations with individual wealthy men.</p>
+
+  <div class="bond-split reveal">
+    <div class="bond-before">
+      <div class="bond-label">BEFORE ROTHSCHILD — Single Bond Unit</div>
+      <div class="bond-main-number">£10,000</div>
+      <p style="margin-top:12px; font-size:13px; color: var(--silver); margin-bottom:0;">Only 20 people in England could afford this. Government held hostage to a handful of wealthy men. Fundraising: 1+ month. If 10 refused: government starved of capital.</p>
+    </div>
+    <div class="bond-label" style="padding: 12px 0 6px 0; font-size:10px; color: var(--gold);">AFTER ROTHSCHILD — Same Bond, Fragmented into 100 Units of £100</div>
+    <div class="bond-after" id="bondMini"></div>
+    <p style="margin-top:12px; font-size:13px; color: var(--silver);">Now 2,000 people can participate. Doctor. Lawyer. Shopkeeper. Anyone with savings. Government raises capital in days, not months. Rothschild takes 2–3% commission on every unit sold.</p>
+  </div>
+
+  <h3 class="reveal">The Secondary Market — Liquidity Creates Participation</h3>
+
+  <p class="reveal">Rothschild also created what we now call the <strong>secondary bond market</strong> — a marketplace where bonds could be bought and sold between investors. Before this, if you bought a 10-year government bond and needed money urgently, you had no choice but to wait. The government would tell you: "Ten years. Wait."</p>
+
+  <p class="reveal">Now you could sell your bond to another investor — today, at market price. This liquidity meant more people were willing to buy bonds in the first place. The market grew. Government debt became a traded commodity — like vegetables in a market, as the original transcript describes — flowing from hand to hand across borders.</p>
+
+  <h3 class="reveal">The Web — And Why Default Became Impossible</h3>
+
+  <p class="reveal">By distributing bonds across thousands of investors across multiple countries, Rothschild created a financial web so entangled that any single government's default would cascade globally:</p>
+
+  <div class="domino-row reveal">
+    <div class="domino">
+      <div class="domino-flag">🇬🇧</div>
+      Britain<br>Defaults
+    </div>
+    <div class="domino-arrow">→</div>
+    <div class="domino falling">
+      <div class="domino-flag">🇫🇷</div>
+      French<br>Investors<br>Collapse
+    </div>
+    <div class="domino-arrow">→</div>
+    <div class="domino falling">
+      <div class="domino-flag">🇩🇪</div>
+      German<br>Banks<br>Fall
+    </div>
+    <div class="domino-arrow">→</div>
+    <div class="domino falling">
+      <div class="domino-flag">🇦🇹</div>
+      Austria<br>Collapses
+    </div>
+    <div class="domino-arrow">→</div>
+    <div class="domino falling">
+      <div class="domino-flag">🌍</div>
+      Global<br>Contagion
+    </div>
+  </div>
+
+  <p class="reveal">British bonds were held by French investors. French bonds were held by German banks. German bonds were held by Austrian aristocracy. Austrian bonds by Russian nobles. If Britain defaults: British bonds become worthless. French investors, to avoid bankruptcy, panic-sell their German bonds at any price. German bond prices crash. German banks fail. They sell Austrian holdings. Austria collapses. The cascade continues.</p>
+
+  <div class="callout reveal">
+    <span class="callout-number" style="font-size:32px;">The Option to Say No</span>
+    <div class="callout-label">Was Surgically Removed</div>
+    <div class="callout-body">After Rothschild, no single government could default without triggering a global financial collapse. Mana karne ka option hi khatam ho gaya tha. The choice to refuse — that had existed since the beginning of civilization — was gone. Governments were now permanently trapped. They had to pay interest — even if their people starved — because the alternative was global financial catastrophe. Yeh doosra jaal tha. Debt was no longer just permanent. It was inescapable.</div>
+  </div>
+
+  <p class="reveal">By 1820, the Rothschild network controlled the financing of most European governments. Any government that needed capital had one address. The Rothschilds. On their terms. At their rates. With conditions they dictated. The power to lend had become the power to govern.</p>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 5 — EAST INDIA COMPANY & INDIA -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section id="s5">
+  <div class="chapter-eyebrow reveal">Chapter 05 — India Connection</div>
+  <h2 class="reveal">East India Company — <em>The Same System</em><br>Applied to a Civilization</h2>
+
+  <p class="reveal">While Rothschild was industrializing the European bond market, the same debt-trap logic was being applied to India — not by a central bank, but by a trading company that had learned from the same playbook.</p>
+
+  <div class="trap-flow reveal">
+    <div class="trap-step">
+      <div class="trap-step-label">ENTRY</div>
+      <div class="trap-step-body">1600. East India Company established by British merchants. They come as <strong>traders</strong>. Spices. Cloth. Peaceful commerce. India's kingdoms are fragmented into hundreds of independent princely states — all fighting each other.</div>
+    </div>
+    <div class="trap-step">
+      <div class="trap-step-label">OFFER</div>
+      <div class="trap-step-body">"Raja Sahib — aap padosi se ladna chahte ho? Hum madad karenge." The Company offers military help. <strong>Soldiers. Weapons. Strategy.</strong> "Paison ki chinta mat karo — hum de denge." Don't worry about the money. We'll fund it.</div>
+    </div>
+    <div class="trap-step">
+      <div class="trap-step-label">TRAP</div>
+      <div class="trap-step-body">King wins the battle. <strong>Company's debt now sits on the kingdom.</strong> "Paisa wapas karo, Raja Sahib." But the treasury is empty — war has been fought, not wealth created.</div>
+    </div>
+    <div class="trap-step">
+      <div class="trap-step-label">PAYMENT</div>
+      <div class="trap-step-body">"Koi baat nahi — <strong>apne raajya ka kuch hissa de do.</strong> Ya hum tax collection ka haq le lenge." Give us territory. Or give us the right to collect your taxes. The kingdom's sovereignty — piece by piece — transfers to the Company.</div>
+    </div>
+    <div class="trap-step">
+      <div class="trap-step-label">CONQUEST</div>
+      <div class="trap-step-body">Kingdom after kingdom. Awadh. Bengal. Mysore. Marathas. Each one entrapped by debt, then absorbed. The Nawab of Awadh borrowed from the Company. Could not repay. <strong>Awadh was annexed.</strong> "Raja ho — naam ke. Asli maalik hum hain."</div>
+    </div>
+  </div>
+
+  <h3 class="reveal">The 1857 Revolt and Direct Crown Rule</h3>
+
+  <p class="reveal">The 1857 revolution — the first organized armed resistance against British financial and military occupation — was suppressed. The British Crown then took direct control of India from the Company. And the real extraction began.</p>
+
+  <div class="cost-grid reveal">
+    <div class="cost-item">
+      <div class="cost-item-icon">🛤️</div>
+      <div class="cost-item-title">Railways</div>
+      <div class="cost-item-desc">Built using Indian tax money. Contracted to British companies at guaranteed profit — paid from India's treasury. The railways moved cotton from fields to ports. Not people.</div>
+    </div>
+    <div class="cost-item">
+      <div class="cost-item-icon">🏭</div>
+      <div class="cost-item-title">Trade Architecture</div>
+      <div class="cost-item-desc">Raw cotton and resources extracted. Finished goods imported back and sold to Indians. India becomes a captive market. Value added in England, not India.</div>
+    </div>
+    <div class="cost-item">
+      <div class="cost-item-icon">💸</div>
+      <div class="cost-item-title">Interest on Infrastructure</div>
+      <div class="cost-item-desc">Every road, building, telegraph — funded by Indian taxes. Then Britain charged interest on these "investments." India paid for its own colonization — with interest.</div>
+    </div>
+    <div class="cost-item">
+      <div class="cost-item-icon">🌾</div>
+      <div class="cost-item-title">Bengal Famine 1943</div>
+      <div class="cost-item-desc">20–30 lakh people died of starvation. At the same time, grain was being shipped out on trains — reserved for British forces. The system's logic over human life.</div>
+    </div>
+  </div>
+
+  <div class="gold-box reveal" style="background: var(--card);">
+    <span class="callout-number" style="font-size: 72px;">$45 Trillion</span>
+    <div class="gold-unit">Total Extracted from India — Utsa Patnaik's Calculation</div>
+    <div class="gold-context">Economist Utsa Patnaik calculated the total value extracted from India during British colonial rule — at today's prices. If Britain repaid this today, every single Indian citizen would receive approximately ₹3–4 lakh. The mechanism: debt, trade asymmetry, and tax extraction — the exact system Paterson designed and Rothschild globalized, applied to a civilization for 200 years.</div>
+  </div>
+
+  <div class="quote reveal">"Rang badal gaya. Tarika wahi raha.<br><em>Aaj IMF aata hai. World Bank aata hai.</em><br>Karz wahin hai. Trap wahi hai."</div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 6 — JP MORGAN & FEDERAL RESERVE -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section id="s6">
+  <div class="chapter-eyebrow reveal">Chapter 06 — Third Architect</div>
+  <h2 class="reveal">JP Morgan — <em>1913</em><br>The Removal of All Limits</h2>
+
+  <p class="reveal">By the early 1900s, Paterson's debt was permanent and Rothschild had made it global. But there was still one constraint: banks could only lend what they actually had. A bank with ₹100 crore in deposits could only extend ₹100 crore in loans. This ceiling limited how much debt governments could take on. JP Morgan removed the ceiling.</p>
+
+  <h3 class="reveal">The 1907 Panic — The Trigger</h3>
+
+  <p class="reveal">In 1907, two American businessmen — Augustus Heinze and Charles Morse — attempted to corner the copper market. They planned to buy all available copper, then sell at inflated prices. The plan failed catastrophically. Both were financially destroyed.</p>
+
+  <p class="reveal">The problem: they sat on the boards of multiple banks. When news of their collapse spread, depositors panicked. They lined up outside Knickerbocker Trust — the largest connected institution — demanding their money back. Banks do not hold all their deposits in reserve. They lend most of it out. When everyone wants their money simultaneously, the bank collapses.</p>
+
+  <div class="flow reveal">
+    <div class="flow-node">
+      <div class="flow-node-icon">📉</div>
+      <div class="flow-node-title">Heinze &amp; Morse Fail</div>
+      <div class="flow-node-sub">Copper corner attempt. Both destroyed financially.</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="flow-node-icon">😰</div>
+      <div class="flow-node-title">Public Panic</div>
+      <div class="flow-node-sub">Their bank board connections made depositors fear collapse.</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="flow-node-icon">🏦</div>
+      <div class="flow-node-title">Bank Run</div>
+      <div class="flow-node-sub">Mass withdrawal. Banks can't pay. Multiple failures cascade.</div>
+    </div>
+    <div class="flow-arrow">→</div>
+    <div class="flow-node">
+      <div class="flow-node-icon">🚪</div>
+      <div class="flow-node-title">JP Morgan Acts</div>
+      <div class="flow-node-sub">Locks NYC bankers in his library. Pools private capital. Crisis contained.</div>
+    </div>
+  </div>
+
+  <p class="reveal">JP Morgan — 70 years old, the most powerful private banker in America — personally organized the rescue. He summoned New York's top bankers to his private library, locked the doors, and refused to let anyone leave until they had collectively pledged enough capital to stabilize the failing banks. <strong>One man saved the entire American banking system.</strong></p>
+
+  <div class="callout reveal">
+    <span class="callout-number" style="font-size:28px; color: var(--silver);">The Problem</span>
+    <div class="callout-body">Morgan was 70. He knew he could not do this again. And the next crisis might be worse. America needed a permanent institution to do what Morgan had done personally — act as a lender of last resort, inject capital in a crisis, prevent bank runs from becoming total collapse. They needed a central bank. But Americans hated central banks.</div>
+  </div>
+
+  <h3 class="reveal">Jekyll Island — The Secret Meeting of 1910</h3>
+
+  <p class="reveal">America had abolished two central banks before. Both times, citizens organized against the concentration of financial power in private hands. The argument: "Rich bankers will control our money and govern us." Both banks were shut down by public pressure.</p>
+
+  <p class="reveal">So in November 1910, the plan for the third central bank was drafted in absolute secrecy. The location: <strong>Jekyll Island, Georgia</strong> — a private resort island accessible only by private arrangement.</p>
+
+  <div class="cost-grid reveal">
+    <div class="cost-item">
+      <div class="cost-item-icon">🏦</div>
+      <div class="cost-item-title">Nelson Aldrich</div>
+      <div class="cost-item-desc">Senator. Chairman of National Monetary Commission. Political access and legislative power.</div>
+    </div>
+    <div class="cost-item">
+      <div class="cost-item-icon">💼</div>
+      <div class="cost-item-title">Frank Vanderlip</div>
+      <div class="cost-item-desc">National City Bank. One of the largest banks in America. Represented Rockefeller interests.</div>
+    </div>
+    <div class="cost-item">
+      <div class="cost-item-icon">🤝</div>
+      <div class="cost-item-title">Henry Davison</div>
+      <div class="cost-item-desc">Senior partner at JP Morgan &amp; Co. Morgan's direct representative at the island.</div>
+    </div>
+    <div class="cost-item">
+      <div class="cost-item-icon">⚙️</div>
+      <div class="cost-item-title">Benjamin Strong</div>
+      <div class="cost-item-desc">Would become first president of the Federal Reserve Bank of New York. The operational architect.</div>
+    </div>
+  </div>
+
+  <p class="reveal">They spent one week drafting legislation. The plan was kept secret because — as they explicitly understood — if the American public learned that the country's wealthiest bankers were secretly designing the nation's money system, there would be riots in the streets.</p>
+
+  <div class="trick-split reveal">
+    <div class="trick-old">
+      <div class="trick-tag">What it actually was</div>
+      <div class="trick-body">A <strong>central bank</strong>. A single institution controlling the nation's money supply, acting as lender of last resort, controlled by the largest private banks.</div>
+    </div>
+    <div class="trick-new">
+      <div class="trick-tag">What they called it</div>
+      <div class="trick-body"><strong>Federal Reserve System.</strong> "Federal" = sounds governmental. "Reserve" = sounds safe. "System" = sounds decentralized. None of these implications were accurate.</div>
+    </div>
+  </div>
+
+  <p class="reveal">December 1913. The Federal Reserve Act was rushed through Congress in the days before Christmas. Most representatives did not understand the bill's full implications. It passed. The Federal Reserve — privately controlled, publicly named — became America's central bank.</p>
+
+  <h3 class="reveal">How Money is Created From Nothing — The Exact Mechanism</h3>
+
+  <p class="reveal">This is the core of what Morgan built — and the mechanism that makes unlimited debt possible. Follow each step precisely:</p>
+
+  <div class="mechanism reveal">
+    <div class="mech-step">
+      <div class="mech-num">1</div>
+      <div class="mech-content">
+        <div class="mech-title">Government needs money</div>
+        <div class="mech-body">Say ₹100. The government does not have it. It decides to borrow.</div>
+      </div>
+    </div>
+    <div class="mech-step">
+      <div class="mech-num">2</div>
+      <div class="mech-content">
+        <div class="mech-title">Government issues a Bond</div>
+        <div class="mech-body">A bond is a written promise: "We borrowed ₹100. We will pay ₹5 interest every year. We will repay ₹100 after 10 years." This promise is a piece of paper — but it is a legally binding instrument.</div>
+      </div>
+    </div>
+    <div class="mech-step">
+      <div class="mech-num">3</div>
+      <div class="mech-content">
+        <div class="mech-title">Federal Reserve buys the Bond</div>
+        <div class="mech-body">The Fed receives the bond. Now the critical question: WHERE does the Fed get the ₹100 to pay for it?</div>
+        <div class="mech-note">THE ANSWER: It does not "get" it from anywhere. It creates it.</div>
+      </div>
+    </div>
+    <div class="mech-step">
+      <div class="mech-num">4</div>
+      <div class="mech-content">
+        <div class="mech-title">A computer entry is made</div>
+        <div class="mech-body">No printing press runs. No vault opens. No truck carries cash anywhere. The Federal Reserve types "₹100" into the government's reserve account. That's it. The number appears. Money exists.</div>
+        <div class="mech-note">Koi note nahi chhapa. Koi truck nahi chala. Sirf ek computer entry. Aur paisa exist karne laga.</div>
+      </div>
+    </div>
+    <div class="mech-step">
+      <div class="mech-num">5</div>
+      <div class="mech-content">
+        <div class="mech-title">Government spends the money</div>
+        <div class="mech-body">Pays a contractor ₹100. The contractor's bank account now shows +₹100. Still no physical cash. Still purely digital. The money circulates as digital bank deposits.</div>
+      </div>
+    </div>
+    <div class="mech-step">
+      <div class="mech-num">6</div>
+      <div class="mech-content">
+        <div class="mech-title">Physical cash only appears on demand</div>
+        <div class="mech-body">When the contractor withdraws ₹20 from an ATM, only then does the bank request physical notes from the Fed. Only then does paper currency enter circulation. Before that demand, the entire ₹100 was digital.</div>
+      </div>
+    </div>
+    <div class="mech-step">
+      <div class="mech-num">7</div>
+      <div class="mech-content">
+        <div class="mech-title">Interest flows from taxpayers — forever</div>
+        <div class="mech-body">The bond now sits as an asset on the Fed's balance sheet. The government owes ₹5 per year in interest. Where does this come from? Taxes. Your GST. Your income tax. Your fuel tax. Every year. Without fail.</div>
+      </div>
+    </div>
+    <div class="mech-step">
+      <div class="mech-num">8</div>
+      <div class="mech-content">
+        <div class="mech-title">Principal repaid with new debt</div>
+        <div class="mech-body">After 10 years, the government owes ₹100 back. Does it have it? No — it was already spent. So it issues a new bond. New debt to repay old debt. The cycle repeats. Principal is never actually retired.</div>
+        <div class="mech-note">Naya karz — purana karz chukane ke liye. Chakkar hamesha ke liye.</div>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="reveal">Why Debt Can Never Be Repaid — And Why That is Intentional</h3>
+
+  <p class="reveal">Here is the structural impossibility at the heart of the system: <strong>money is created by debt.</strong> When the government issues a bond and the Fed creates money against it, that money enters the economy. If all government debt were repaid — all bonds retired — that money would disappear from the economy.</p>
+
+  <p class="reveal">Global money supply would shrink by 65–70%. There would not be enough money in existence to conduct normal trade. The economy would seize. This is why debt can never be eliminated. It is not a problem to solve. It is the substrate the entire economy runs on.</p>
+
+  <div class="callout reveal">
+    <span class="callout-number">RBI</span>
+    <div class="callout-label">Reserve Bank of India — Established 1935 — Same Architecture</div>
+    <div class="callout-body">The Reserve Bank of India runs the identical mechanism. Government needs money → issues bonds → RBI buys bonds → money is created → interest is paid from taxes. India's sovereign debt stands at over ₹170 lakh crore. It will never be repaid. It is not meant to be repaid. It is meant to grow — because as long as it grows, interest flows from taxpayers to bondholders. Forever.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 7 — PAUL VOLCKER & IMF -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section id="s7">
+  <div class="chapter-eyebrow reveal">Chapter 07 — Fourth Architect</div>
+  <h2 class="reveal">Paul Volcker — <em>1979</em><br>Making Escape Structurally Impossible</h2>
+
+  <p class="reveal">By 1979, three pillars were in place. Debt was permanent (Paterson). Debt was global (Rothschild). Debt was unlimited (Morgan). But a structural vulnerability remained: countries could still default. When they did, debt was often forgiven or reduced. The trap had exits. Volcker closed them.</p>
+
+  <h3 class="reveal">The Volcker Shock — What Happened in 1979</h3>
+
+  <p class="reveal">The United States in the 1970s was experiencing severe inflation. The dollar was losing value. Every year, everything cost more. Volcker's mandate as Federal Reserve Chairman was to stop inflation. His method was blunt: raise interest rates dramatically.</p>
+
+  <div class="trick-split reveal">
+    <div class="trick-old">
+      <div class="trick-tag">Before Volcker</div>
+      <div class="trick-body">Bank loan interest rate: approximately <strong>10%</strong>. Borrowing was accessible. Credit flowed. Latin American nations had borrowed billions throughout the 1970s when rates were low.</div>
+    </div>
+    <div class="trick-new">
+      <div class="trick-tag">After Volcker — 1979</div>
+      <div class="trick-body">Interest rate raised to <strong>20%</strong>. Overnight. All existing variable-rate dollar loans — carried by developing nations — doubled in interest obligation. With no adjustment period. No warning.</div>
+    </div>
+  </div>
+
+  <p class="reveal">For the United States, this worked. Inflation fell. The dollar strengthened. But for the developing nations of Latin America — Mexico, Brazil, Argentina — who had borrowed billions at 8–10% throughout the 1970s, this was catastrophic:</p>
+
+  <div class="emi-calc reveal">
+    <div class="emi-header">LATIN AMERICA DEBT MATH — VOLCKER SHOCK EFFECT</div>
+    <div class="emi-row">
+      <div class="emi-row-label">Loan Amount (example)</div>
+      <div class="emi-row-value">$100</div>
+    </div>
+    <div class="emi-row">
+      <div class="emi-row-label">Interest rate — 1975 (when borrowed)</div>
+      <div class="emi-row-value">8–10%</div>
+    </div>
+    <div class="emi-row">
+      <div class="emi-row-label">Annual interest payment — 1975</div>
+      <div class="emi-row-value">$8 per year</div>
+    </div>
+    <div class="emi-row">
+      <div class="emi-row-label">Interest rate — after Volcker Shock</div>
+      <div class="emi-row-value danger">20%</div>
+    </div>
+    <div class="emi-row danger">
+      <div class="emi-row-label">Annual interest payment — after shock</div>
+      <div class="emi-row-value">$20 per year</div>
+    </div>
+    <div class="emi-row gold">
+      <div class="emi-row-label">Increase in annual obligation</div>
+      <div class="emi-row-value">150% MORE</div>
+    </div>
+  </div>
+
+  <h3 class="reveal">Mexico 1982 — Default and the IMF Playbook</h3>
+
+  <p class="reveal">In 1982, Mexico announced it could not service its debt. Default. The American banks that had lent to Mexico — Citibank, Bank of America, Chase Manhattan — faced catastrophic losses. If Mexico defaulted, these banks would fail. If these banks failed, the entire American financial system would be at risk.</p>
+
+  <p class="reveal">Volcker had two choices:</p>
+
+  <div class="trick-split reveal">
+    <div class="trick-old">
+      <div class="trick-tag">Option 1 — Market Correction</div>
+      <div class="trick-body">Let Mexico default. Banks absorb losses. Lesson learned: don't lend recklessly. Market self-corrects. <strong>Mexico's debt is cancelled or reduced.</strong> The trap has an exit.</div>
+    </div>
+    <div class="trick-new">
+      <div class="trick-tag">Option 2 — The IMF Solution</div>
+      <div class="trick-body">IMF lends Mexico money to pay the American banks. Banks are saved. <strong>Mexico's debt is restructured, not cancelled.</strong> The trap is permanent. The exit is sealed.</div>
+    </div>
+  </div>
+
+  <p class="reveal">Volcker chose Option 2. The IMF — International Monetary Fund — stepped in. Mexico received new loans to pay the interest on old loans. The banks were made whole. But the conditions attached to IMF assistance were total and brutal.</p>
+
+  <h3 class="reveal">IMF Structural Adjustment — The Conditions</h3>
+
+  <div class="conditions reveal">
+    <div class="condition">
+      <div class="condition-num">01</div>
+      <div class="condition-text">
+        <strong>Cut government spending</strong> — on schools, hospitals, social programs. The public sector must shrink.
+        <div class="condition-impact">Impact: Citizens bear the cost. Education, healthcare, social safety nets gutted.</div>
+      </div>
+    </div>
+    <div class="condition">
+      <div class="condition-num">02</div>
+      <div class="condition-text">
+        <strong>Privatise state assets</strong> — sell government-owned water companies, electricity, telephones to private buyers.
+        <div class="condition-impact">Impact: Essential services become profit centers. Public access becomes dependent on ability to pay.</div>
+      </div>
+    </div>
+    <div class="condition">
+      <div class="condition-num">03</div>
+      <div class="condition-text">
+        <strong>Open markets</strong> — allow foreign companies unrestricted entry. Remove protections for local industries.
+        <div class="condition-impact">Impact: Domestic companies unable to compete with capitalized multinationals. Local industry hollowed out.</div>
+      </div>
+    </div>
+    <div class="condition">
+      <div class="condition-num">04</div>
+      <div class="condition-text">
+        <strong>Devalue currency</strong> — deliberately weaken the peso, rupee, peso. This makes exports cheaper on global markets.
+        <div class="condition-impact">Impact: Imports become more expensive. Real wages fall. Population becomes poorer in purchasing power.</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout reveal">
+    <span class="callout-number" style="font-size:28px;">The Critical Distinction</span>
+    <div class="callout-label">Debt Was Not Forgiven. Only Restructured.</div>
+    <div class="callout-body">Mexico owed 80 billion dollars. Before restructuring: repay in 5 years. After restructuring: repay in 15 years. The principal was identical. Not one dollar was forgiven. Only the timeline extended. New loans were used to pay old interest. The debt was made more manageable — specifically so it could continue indefinitely. This is Volcker's design: when debt becomes unpayable, don't forgive it. Restructure it. Keep the interest flowing. Take economic sovereignty as the price.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 8 — INDIA 1991 -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section id="s8">
+  <div class="chapter-eyebrow reveal">Chapter 08 — India 1991</div>
+  <h2 class="reveal"><em>1991.</em> India Pledged Its Gold.<br>To the British Bank.</h2>
+
+  <p class="reveal">The same Volcker playbook, the same IMF architecture, the same conditions — applied to India. A nation that had fought 200 years for independence, that had expelled British rule in 1947, sent its gold back to a British bank in 1991.</p>
+
+  <h3 class="reveal">How India Got Here — The Setup</h3>
+
+  <div class="timeline reveal">
+    <div class="timeline-item">
+      <div class="timeline-left">
+        <div class="timeline-year">1980s</div>
+        <div class="timeline-dot filled"></div>
+      </div>
+      <div class="timeline-content">
+        <h4>Borrowing for Development</h4>
+        <p>India borrowed heavily throughout the 1980s — for development projects, infrastructure, and oil imports. When global interest rates were low, this seemed manageable.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-left">
+        <div class="timeline-year">1990</div>
+        <div class="timeline-dot filled"></div>
+      </div>
+      <div class="timeline-content">
+        <h4>Iraq Invades Kuwait — Gulf War</h4>
+        <p>Oil prices explode. India imports most of its oil. The import bill surges dramatically. Dollar outflows accelerate. Foreign exchange reserves begin to drain.</p>
+      </div>
+    </div>
+    <div class="timeline-item">
+      <div class="timeline-left">
+        <div class="timeline-year">1991</div>
+        <div class="timeline-dot filled"></div>
+      </div>
+      <div class="timeline-content">
+        <h4>Two Weeks of Reserves</h4>
+        <p>India's foreign exchange reserves fell to a level covering only <strong>two weeks of imports</strong>. If India needed to buy petrol, medicines, or machinery from abroad, the money would run out in 14 days. India was on the edge of sovereign default.</p>
+      </div>
+    </div>
+  </div>
+
+  <h3 class="reveal">The Gold — 67 Tonnes</h3>
+
+  <div class="gold-box reveal">
+    <span class="gold-tonnes">67</span>
+    <div class="gold-unit">Tonnes of Gold — Pledged by India in 1991</div>
+    <div class="gold-context">Reserve Bank of India's gold reserves were physically removed, loaded onto aircraft, and shipped to the Bank of England and Union Bank of Switzerland as collateral against emergency loans. A nation of 850 million people — independent since 1947 — returned its gold to a British institution to survive a financial crisis created by a system designed in London in 1694.</div>
+  </div>
+
+  <div class="quote reveal">"1947 mein sona angrez ke paas tha.<br>1991 mein — <em>hum khud le ke gaye.</em>"</div>
+
+  <h3 class="reveal">LPG Reforms — Choice or Compulsion?</h3>
+
+  <p class="reveal">Prime Minister PV Narasimha Rao and Finance Minister Manmohan Singh accepted the IMF's conditions. The 1991 reforms — Liberalisation, Privatisation, Globalisation — transformed India's economic policy.</p>
+
+  <div class="trick-split reveal">
+    <div class="trick-old">
+      <div class="trick-tag">What Textbooks Say</div>
+      <div class="trick-body">The LPG reforms modernised India. GDP grew. Foreign investment flowed in. Jobs were created. India integrated with the global economy. <strong>A turning point for the better.</strong></div>
+    </div>
+    <div class="trick-new">
+      <div class="trick-tag">What Textbooks Don't Say</div>
+      <div class="trick-body">India had no choice. These reforms were <strong>IMF conditions</strong> — accept them or default. The reforms were not chosen strategy. They were compulsion. The distinction matters — it changes who gets credit and who holds power.</div>
+    </div>
+  </div>
+
+  <h3 class="reveal">The Pattern That Never Stops</h3>
+
+  <div class="pattern-cards reveal">
+    <div class="pattern-card">
+      <div class="pattern-card-year">MEXICO — 1982</div>
+      <div class="pattern-card-country">Default</div>
+      <div class="pattern-card-body">IMF intervenes. Structural adjustment imposed. Austerity cuts. Market opening. Currency devaluation. Debt restructured — not forgiven.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-card-year">INDIA — 1991</div>
+      <div class="pattern-card-country">Gold Pledge</div>
+      <div class="pattern-card-body">Two weeks of reserves. IMF loan. LPG conditions. 67 tonnes of gold to British bank. Sovereignty partially transferred to economic conditionality.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-card-year">GREECE — 2010</div>
+      <div class="pattern-card-country">Debt Crisis</div>
+      <div class="pattern-card-body">IMF and EU intervene. Pensions cut. Hospitals without medicine. GDP shrinks for years. Debt not forgiven — restructured. Citizens bear all costs.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-card-year">ARGENTINA — 2001</div>
+      <div class="pattern-card-country">Collapse</div>
+      <div class="pattern-card-body">Economy implodes overnight. Savings wiped. People take to streets. Banks closed. IMF conditions. Debt cycle begins again.</div>
+    </div>
+    <div class="pattern-card">
+      <div class="pattern-card-year">SRI LANKA — 2022</div>
+      <div class="pattern-card-country">You Saw It</div>
+      <div class="pattern-card-body">No petrol. No food. Prime Minister fled. People entered the Presidential Palace. IMF bailout. Same conditions. Same debt continues.</div>
+    </div>
+    <div class="pattern-card" style="background: rgba(201,168,76,0.04); border-color: rgba(201,168,76,0.2);">
+      <div class="pattern-card-year" style="color: var(--gold-dim);">ALWAYS — EVERYWHERE</div>
+      <div class="pattern-card-country" style="color: var(--gold);">The Template</div>
+      <div class="pattern-card-body">Crisis → IMF → Conditions → Austerity → Privatisation → Market Opening → Debt Restructured, Never Forgiven → Interest Continues → Sovereignty Reduced.</div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 9 — PERSONAL IMPACT -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section id="s9">
+  <div class="chapter-eyebrow reveal">Chapter 09 — Personal Impact</div>
+  <h2 class="reveal">Your Salary. Your Tax. Your EMI.<br>The System <em>In Your Pocket</em></h2>
+
+  <p class="reveal">Everything we have examined — sovereign debt, central banks, bond markets, IMF conditions — operates at a scale that feels distant. Here is how it lands in your wallet, today.</p>
+
+  <h3 class="reveal">Your Tax Pays Interest on Debt You Never Approved</h3>
+
+  <div class="callout reveal">
+    <span class="callout-number">₹12 Lakh Crore</span>
+    <div class="callout-label">India's Annual Interest Payment — Budget 2024–25</div>
+    <div class="callout-body">Not principal repayment. Not development. Just interest. Every rupee of GST you pay on tea, biscuits, clothes, and phones. Every rupee of income tax cut from your salary. Every rupee of fuel tax. A significant portion goes directly to servicing debt — paid to bondholders who hold government securities. You pay taxes believing they build roads and schools. A large portion builds nothing. It services debt.</div>
+  </div>
+
+  <h3 class="reveal">Inflation — The Invisible Tax</h3>
+
+  <p class="reveal">Central banks print money to fund government borrowing. More money in the system, same goods — prices rise. This is inflation. And inflation is a wealth transfer mechanism:</p>
+
+  <div class="trick-split reveal">
+    <div class="trick-old">
+      <div class="trick-tag">If You Hold a Salary</div>
+      <div class="trick-body">Your salary grew 2× in 10 years. But prices grew 3×. Your actual purchasing power declined. You are <strong>poorer in real terms</strong> than you were 10 years ago — even though your number is bigger. Inflation eroded your wage's value silently.</div>
+    </div>
+    <div class="trick-new">
+      <div class="trick-tag">If You Hold Assets</div>
+      <div class="trick-body">Your property worth ₹1 crore is now ₹3 crore. Your gold holdings appreciate. Inflation increased the <em>rupee price</em> of real assets. You became <strong>wealthier in rupee terms</strong> without doing anything. The same inflation that hurt the salary-earner benefited you.</div>
+    </div>
+  </div>
+
+  <p class="reveal">This is not incidental. It is structural. The system is designed so that those who hold real assets accumulate wealth through inflation, while those who depend on wage income have their purchasing power systematically eroded. The rich accumulate. The rest tread water — or sink.</p>
+
+  <h3 class="reveal">The EMI — Paterson's System at the Individual Level</h3>
+
+  <p class="reveal">The EMI is not a convenience feature. It is the retail version of sovereign debt — the same Paterson template applied to your personal finances:</p>
+
+  <div class="emi-calc reveal">
+    <div class="emi-header">EMI REALITY — THE MATH THEY DON'T SHOW YOU UPFRONT</div>
+    <div class="emi-row">
+      <div class="emi-row-label">iPhone Price</div>
+      <div class="emi-row-value">₹1,00,000</div>
+    </div>
+    <div class="emi-row">
+      <div class="emi-row-label">Monthly EMI (offered)</div>
+      <div class="emi-row-value">₹5,000/month</div>
+    </div>
+    <div class="emi-row">
+      <div class="emi-row-label">Duration</div>
+      <div class="emi-row-value">24 months</div>
+    </div>
+    <div class="emi-row danger">
+      <div class="emi-row-label">Total Actually Paid</div>
+      <div class="emi-row-value">₹1,20,000</div>
+    </div>
+    <div class="emi-row danger">
+      <div class="emi-row-label">Extra Paid (hidden interest)</div>
+      <div class="emi-row-value">₹20,000</div>
+    </div>
+    <div class="emi-row">
+      <div class="emi-row-label">Before EMI ends</div>
+      <div class="emi-row-value">New model released. Cycle repeats.</div>
+    </div>
+    <div class="emi-row gold">
+      <div class="emi-row-label">Credit Card interest if you pay minimum</div>
+      <div class="emi-row-value">42% per year — legal</div>
+    </div>
+  </div>
+
+  <p class="reveal">And it is never one EMI. Laptop EMI. Bike EMI. Car EMI. AC, fridge, furniture EMI. Wedding loan. Vacation loan. Each one feels small — ₹2,000 here, ₹5,000 there. Add them together and half your salary — sometimes more — is pre-committed to debt servicing before you make a single discretionary decision.</p>
+
+  <div class="quote reveal">"Tum sochte ho — <em>tum cheezoon ke maalik ho.</em><br>Nahi. Cheezoon ne tumhe apna ghulaam bana liya hai."<br><span style="font-family:Inter,sans-serif; font-style:normal; font-size:13px; color:var(--silver);">You think you own the things. The things own you.</span></div>
+
+  <p class="reveal">You cannot leave the job that diminishes you. Because EMI. You cannot take the risk that could free you. Because EMI. You cannot start what only you can build. Because EMI. Your boss can insult you, demean you, and you must stay silent. Because EMI. <strong>EMI is the most effective mechanism for converting free people into permanent debtors.</strong> And it was designed that way.</p>
+
+  <h3 class="reveal">Who Holds the Bonds — Who Actually Benefits</h3>
+
+  <div class="holders reveal">
+    <div class="holder-box">
+      <div class="holder-box-title">US — $38 Trillion Bond Holders</div>
+      <div class="holder-item">
+        <span class="holder-item-name">American Pension Funds</span>
+        <span class="holder-item-action">Earn interest annually</span>
+      </div>
+      <div class="holder-item">
+        <span class="holder-item-name">Insurance Companies</span>
+        <span class="holder-item-action">Earn interest annually</span>
+      </div>
+      <div class="holder-item">
+        <span class="holder-item-name">China (Foreign Govt)</span>
+        <span class="holder-item-action">Earn interest annually</span>
+      </div>
+      <div class="holder-item">
+        <span class="holder-item-name">Japan (Foreign Govt)</span>
+        <span class="holder-item-action">Earn interest annually</span>
+      </div>
+      <div class="holder-item">
+        <span class="holder-item-name">Banks &amp; Investors</span>
+        <span class="holder-item-action">Earn interest annually</span>
+      </div>
+    </div>
+    <div class="holder-box">
+      <div class="holder-box-title">India — ₹170 Lakh Crore Bond Holders</div>
+      <div class="holder-item">
+        <span class="holder-item-name">Indian Banks (SBI, etc.)</span>
+        <span class="holder-item-action">Earn interest annually</span>
+      </div>
+      <div class="holder-item">
+        <span class="holder-item-name">LIC</span>
+        <span class="holder-item-action">Earn interest annually</span>
+      </div>
+      <div class="holder-item">
+        <span class="holder-item-name">Mutual Funds</span>
+        <span class="holder-item-action">Earn interest annually</span>
+      </div>
+      <div class="holder-item">
+        <span class="holder-item-name">Foreign Investors</span>
+        <span class="holder-item-action">Earn interest annually</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="callout reveal">
+    <span class="callout-number" style="font-size:28px; color: var(--danger-light);">You Are On Both Sides</span>
+    <div class="callout-body">Your pension money, your SIP, your insurance premiums — these flow into mutual funds and banks that hold government bonds. So you are indirectly a bondholder. At the same time, your tax money services the government's interest payments on those same bonds. You are both the source of the interest payment and a fractional recipient of it — but the institutions in the middle capture the spread. Tum dono taraf se involve ho. Lekin faayda institutions ko ho raha hai jo bich mein hain.</div>
+  </div>
+
+  <div class="callout reveal" style="border-left-color: var(--gold);">
+    <span class="callout-number" style="font-size:28px;">$1 Trillion+</span>
+    <div class="callout-label">Annual wealth transfer — Taxpayers to Bondholders — from America alone</div>
+    <div class="callout-body">Add Japan. Europe. India. Every country. Every year. This transfer never pauses. It is structural. It is invisible — because it is not called a tax. It is called "debt service." "Interest payment." The mechanism is identical. Workers pay. Institutions collect. The debt never shrinks.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 10 — THE FOUR ARCHITECTS -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section id="s10">
+  <div class="chapter-eyebrow reveal">Chapter 10 — The Complete System</div>
+  <h2 class="reveal">Four Architects. Three Centuries. <em>One System.</em></h2>
+
+  <p class="reveal">They never met. They lived in different centuries, different countries, different contexts. There was no conspiracy. Each solved a problem that bankers faced — and each solution built upon the previous one. The result is a system more durable than any empire.</p>
+
+  <div class="architects reveal">
+    <div class="arch-card">
+      <div class="arch-year">1694 — ENGLAND</div>
+      <div class="arch-name">William Paterson</div>
+      <div class="arch-action">Made Debt Permanent</div>
+      <div class="arch-body">A failed Scottish merchant who designed the Bank of England. His innovation: sovereign debt with no maturity date. Principal never repaid. Interest flows forever from taxpayers to lenders. The template that every central bank now runs.</div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-year">1815 — EUROPE</div>
+      <div class="arch-name">Nathan Rothschild</div>
+      <div class="arch-action">Made Debt Global &amp; Inescapable</div>
+      <div class="arch-body">The London Rothschild — shrewdest of five brothers across five cities. Democratized bond markets. Created the secondary market. Cross-border debt holdings so entangled that any default cascades globally. Removed the option to say no.</div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-year">1913 — AMERICA</div>
+      <div class="arch-name">JP Morgan</div>
+      <div class="arch-action">Made Debt Unlimited</div>
+      <div class="arch-body">The panic of 1907 created the political cover. Jekyll Island created the blueprint. The Federal Reserve removed the last physical constraint on money creation. Now government debt has no ceiling. Money is created from a keystroke. America's $38 trillion is the result.</div>
+    </div>
+    <div class="arch-card">
+      <div class="arch-year">1979 — GLOBAL</div>
+      <div class="arch-name">Paul Volcker</div>
+      <div class="arch-action">Made Default Impossible</div>
+      <div class="arch-body">The Volcker Shock created the debt crises. The IMF provided the solution — on conditions that transferred sovereignty. Default was replaced with restructuring. The exit door was welded shut. When you cannot repay, you are refinanced — forever indebted, conditions attached.</div>
+    </div>
+  </div>
+
+  <div class="callout reveal" style="border-left-color: var(--gold);">
+    <span class="callout-number" style="font-size:28px;">The Business Model</span>
+    <div class="callout-label">$38 Trillion Is Not a Crisis. It Is the Product.</div>
+    <div class="callout-body">Every dollar of government debt is an asset on someone's balance sheet. That asset pays interest. The interest funds borrowing against that asset. As long as governments are trusted to pay interest — even if the principal is never repaid — the system runs indefinitely. The debt is not a problem that needs to be solved. It IS the business model. Yeh karz ek crisis nahi hai — yeh unka business model hai.</div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- SECTION 11 — WHAT TO DO -->
+<!-- ═══════════════════════════════════════════════════ -->
+<section id="s11">
+  <div class="chapter-eyebrow reveal">Chapter 11 — The Response</div>
+  <h2 class="reveal">The System Will Not Change.<br><em>You Can.</em></h2>
+
+  <p class="reveal">The system cannot be brought down from outside — not without dismantling money itself. But the system operates most effectively on people who do not see it. The moment you see it clearly, you begin to navigate differently. Three things.</p>
+
+  <div class="todo-list reveal">
+    <div class="todo-item">
+      <div class="todo-icon">I</div>
+      <div class="todo-content">
+        <div class="todo-title">Awareness is the primary weapon</div>
+        <div class="todo-body">When the system was invisible to you, it ran you blindly. You paid taxes without knowing where they went. You took EMIs without calculating total outflow. You consumed inflation as "just how things are." Once you see the mechanism — you make different decisions. The knowledge is itself the first move. This is not abstract. It is operational.</div>
+      </div>
+    </div>
+    <div class="todo-item">
+      <div class="todo-icon">II</div>
+      <div class="todo-content">
+        <div class="todo-title">Stop being the system's fuel — become a participant on the other side</div>
+        <div class="todo-body">The system consumes consumers and enriches investors. A consumer pays EMI interest. An investor earns interest. Both are inside the same system. One is the fuel. The other has a seat at the table. The shift is not philosophical — it is mechanical. Reduce debt. Build assets. Own property, gold, equity. The same inflation that erodes your salary increases the value of your assets. Move to the side where interest flows toward you, not away from you.</div>
+      </div>
+    </div>
+    <div class="todo-item">
+      <div class="todo-icon">III</div>
+      <div class="todo-content">
+        <div class="todo-title">Practical — six specific steps</div>
+        <div class="todo-body">
+          <strong>1. Reduce EMI load.</strong> If you cannot buy it with cash, do not buy it now. The convenience of an EMI costs 20–40% more than the price tag.<br><br>
+          <strong>2. Never pay minimum on credit cards.</strong> 42% annual interest on the balance is not debt — it is financial hemorrhage. Pay fully or don't use it.<br><br>
+          <strong>3. Cash savings lose value.</strong> Inflation is always running faster than savings account interest. Real assets — property, gold, equity funds — preserve and grow purchasing power.<br><br>
+          <strong>4. Build a 6-month emergency fund.</strong> The moment you have six months of expenses liquid, you never need to borrow in desperation. Desperation borrowing is the most expensive borrowing.<br><br>
+          <strong>5. Financial education is free.</strong> The system benefits from financial illiteracy. Books, courses, videos — understand how money, tax, and investment work. This is not optional sophistication. It is basic survival knowledge.<br><br>
+          <strong>6. Teach the next generation.</strong> Schools do not teach this. They will not. Because the system requires a supply of financially illiterate consumers to operate. If you understand it — your children must too.
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ═══════════════════════════════════════════════════ -->
+<!-- CLOSING -->
+<!-- ═══════════════════════════════════════════════════ -->
+<div class="closing reveal">
+  <div class="closing-logo">K A U T I L Y A</div>
+  <div class="closing-statement">
+    "Jo aankh ise dekhti hai —<br><em>woh isme andhi nahi rehti."</em>
+  </div>
+  <div class="closing-sub">The eye that sees the system — does not stay blind inside it.</div>
+</div>
+
+<script>
+  // Spine dot position
+  const dot = document.getElementById('spineDot');
+  window.addEventListener('scroll', () => {
+    const scrolled = window.scrollY;
+    const total = document.body.scrollHeight - window.innerHeight;
+    const pct = scrolled / total;
+    dot.style.top = (pct * 90 + 5) + '%';
+  });
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.classList.add('visible');
+      }
+    });
+  }, { threshold: 0.1 });
+  reveals.forEach(r => observer.observe(r));
+
+  // Debt bar animation
+  const barObserver = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) {
+        e.target.querySelectorAll('.debt-bar-fill').forEach(bar => {
+          const w = bar.dataset.width;
+          setTimeout(() => { bar.style.width = w + '%'; }, 200);
+        });
+      }
+    });
+  }, { threshold: 0.3 });
+  const barSection = document.getElementById('debtBars');
+  if (barSection) barObserver.observe(barSection);
+
+  // Bond mini grid
+  const bondMini = document.getElementById('bondMini');
+  if (bondMini) {
+    for (let i = 1; i <= 100; i++) {
+      const el = document.createElement('div');
+      el.className = 'bond-mini';
+      el.textContent = '£100';
+      bondMini.appendChild(el);
+    }
+  }
+</script>
+</body>
+</html>
