@@ -6,1145 +6,765 @@
 <title>KAUTILYA — The Debt Matrix</title>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;0,700;1,300;1,400&family=Inter:wght@300;400;500;600&family=Space+Mono:wght@400;700&display=swap" rel="stylesheet">
 <style>
-  :root {
-    --obsidian: #070707;
-    --surface: #0d0d0d;
-    --card: #111111;
-    --border: #1c1c1c;
-    --gold: #c9a84c;
-    --gold-dim: #8a6f2e;
-    --gold-glow: rgba(201,168,76,0.08);
-    --silver: #7a7a7a;
-    --white: #e2e2e2;
-    --white-dim: #5a5a5a;
-    --danger: #7a1f1f;
-    --danger-light: #c44;
-  }
-
-  * { margin: 0; padding: 0; box-sizing: border-box; }
-
-  html { scroll-behavior: smooth; }
-
-  body {
-    background: var(--obsidian);
-    color: var(--white);
-    font-family: 'Inter', sans-serif;
-    font-weight: 300;
-    line-height: 1.7;
-    overflow-x: hidden;
-  }
-
-  /* GOLD SPINE — signature element running through the whole page */
-  .spine {
-    position: fixed;
-    left: 28px;
-    top: 0;
-    bottom: 0;
-    width: 1px;
-    background: linear-gradient(to bottom, transparent, var(--gold-dim) 10%, var(--gold-dim) 90%, transparent);
-    opacity: 0.4;
-    z-index: 10;
-  }
-
-  /* PROGRESS DOT ON SPINE */
-  .spine-dot {
-    position: fixed;
-    left: 23px;
-    top: 50%;
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    background: var(--gold);
-    z-index: 11;
-    transform: translateY(-50%);
-    box-shadow: 0 0 12px var(--gold);
-    transition: top 0.1s linear;
-  }
-
-  /* CHAPTER COUNTER */
-  .chapter-eyebrow {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.3em;
-    color: var(--gold);
-    text-transform: uppercase;
-    margin-bottom: 12px;
-    opacity: 0.8;
-  }
-
-  /* SECTIONS */
-  section {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 80px 60px 80px 80px;
-    position: relative;
-  }
-
-  section + section {
-    border-top: 1px solid var(--border);
-  }
-
-  /* HERO */
-  .hero {
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 0 60px 0 100px;
-    max-width: none;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .hero::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at 20% 50%, rgba(201,168,76,0.04) 0%, transparent 60%);
-    pointer-events: none;
-  }
-
-  .hero-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.5em;
-    color: var(--gold);
-    margin-bottom: 40px;
-    display: flex;
-    align-items: center;
-    gap: 16px;
-  }
-
-  .hero-label::after {
-    content: '';
-    display: block;
-    width: 60px;
-    height: 1px;
-    background: var(--gold);
-    opacity: 0.5;
-  }
-
-  .hero-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(48px, 7vw, 96px);
-    font-weight: 300;
-    line-height: 1.05;
-    color: var(--white);
-    margin-bottom: 32px;
-    max-width: 800px;
-  }
-
-  .hero-title em {
-    font-style: italic;
-    color: var(--gold);
-  }
-
-  .hero-subtitle {
-    font-size: 15px;
-    color: var(--silver);
-    max-width: 500px;
-    line-height: 1.8;
-    margin-bottom: 60px;
-  }
-
-  .hero-stat-row {
-    display: flex;
-    gap: 60px;
-    flex-wrap: wrap;
-  }
-
-  .hero-stat { display: flex; flex-direction: column; gap: 6px; }
-
-  .hero-stat-number {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 36px;
-    font-weight: 600;
-    color: var(--gold);
-    line-height: 1;
-  }
-
-  .hero-stat-label {
-    font-size: 11px;
-    letter-spacing: 0.15em;
-    color: var(--silver);
-    text-transform: uppercase;
-  }
-
-  /* SECTION HEADINGS */
-  h2 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(32px, 4vw, 54px);
-    font-weight: 300;
-    line-height: 1.15;
-    margin-bottom: 28px;
-    color: var(--white);
-  }
-
-  h2 .gold { color: var(--gold); }
-  h2 em { font-style: italic; }
-
-  h3 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 26px;
-    font-weight: 400;
-    color: var(--white);
-    margin-bottom: 16px;
-    margin-top: 40px;
-  }
-
-  p {
-    font-size: 15px;
-    color: #aaa;
-    margin-bottom: 20px;
-    line-height: 1.85;
-  }
-
-  p strong { color: var(--white); font-weight: 500; }
-  p em { color: var(--gold); font-style: italic; }
-
-  /* CALLOUT BOX — big data moment */
-  .callout {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-left: 3px solid var(--gold);
-    padding: 28px 32px;
-    margin: 36px 0;
-    position: relative;
-  }
-
-  .callout-number {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 64px;
-    font-weight: 700;
-    color: var(--gold);
-    line-height: 1;
-    display: block;
-  }
-
-  .callout-label {
-    font-size: 12px;
-    letter-spacing: 0.2em;
-    color: var(--silver);
-    text-transform: uppercase;
-    margin-top: 8px;
-  }
-
-  .callout-body {
-    font-size: 15px;
-    color: #999;
-    margin-top: 14px;
-    line-height: 1.7;
-  }
-
-  /* COUNTRY DEBT BARS */
-  .debt-bars { margin: 36px 0; }
-
-  .debt-bar-row {
-    display: flex;
-    align-items: center;
-    gap: 16px;
-    margin-bottom: 14px;
-  }
-
-  .debt-bar-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--silver);
-    width: 70px;
-    flex-shrink: 0;
-    letter-spacing: 0.05em;
-  }
-
-  .debt-bar-track {
-    flex: 1;
-    height: 6px;
-    background: var(--border);
-    position: relative;
-    border-radius: 1px;
-  }
-
-  .debt-bar-fill {
-    height: 100%;
-    background: var(--gold);
-    border-radius: 1px;
-    transition: width 1.2s cubic-bezier(0.16,1,0.3,1);
-    width: 0;
-  }
-
-  .debt-bar-fill.animate { /* triggered by JS */ }
-
-  .debt-bar-value {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--gold);
-    width: 90px;
-    flex-shrink: 0;
-    text-align: right;
-  }
-
-  .debt-vs-gdp {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
-    margin: 36px 0;
-    font-family: 'Space Mono', monospace;
-  }
-
-  .dvg-box {
-    padding: 28px;
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-  }
-
-  .dvg-box.debt { background: rgba(201,168,76,0.06); border: 1px solid rgba(201,168,76,0.2); }
-  .dvg-box.gdp { background: var(--card); border: 1px solid var(--border); }
-
-  .dvg-number { font-size: 40px; font-weight: 700; }
-  .dvg-box.debt .dvg-number { color: var(--gold); }
-  .dvg-box.gdp .dvg-number { color: var(--silver); }
-  .dvg-label { font-size: 10px; color: var(--silver); letter-spacing: 0.2em; text-transform: uppercase; }
-  .dvg-sub { font-size: 11px; color: #555; margin-top: 4px; }
-
-  .ratio-line {
-    grid-column: 1 / -1;
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 20px 28px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    font-size: 13px;
-    color: var(--silver);
-  }
-
-  .ratio-line strong { color: var(--danger-light); font-size: 22px; }
-
-  /* FLOW DIAGRAM — for pre-1694 debt cycle */
-  .flow {
-    display: flex;
-    align-items: flex-start;
-    gap: 0;
-    margin: 36px 0;
-    flex-wrap: wrap;
-  }
-
-  .flow-node {
-    flex: 1;
-    min-width: 140px;
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 20px 16px;
-    text-align: center;
-    position: relative;
-  }
-
-  .flow-node-icon { font-size: 28px; margin-bottom: 10px; }
-  .flow-node-title { font-size: 12px; font-weight: 600; color: var(--white); letter-spacing: 0.05em; }
-  .flow-node-sub { font-size: 11px; color: var(--silver); margin-top: 6px; line-height: 1.4; }
-
-  .flow-arrow {
-    display: flex;
-    align-items: center;
-    padding: 0 4px;
-    padding-top: 30px;
-    color: var(--gold-dim);
-    font-size: 18px;
-    flex-shrink: 0;
-  }
-
-  /* TIMELINE */
-  .timeline { margin: 40px 0; }
-
-  .timeline-item {
-    display: flex;
-    gap: 24px;
-    margin-bottom: 0;
-    position: relative;
-  }
-
-  .timeline-item::before {
-    content: '';
-    position: absolute;
-    left: 35px;
-    top: 52px;
-    bottom: -20px;
-    width: 1px;
-    background: var(--border);
-  }
-
-  .timeline-item:last-child::before { display: none; }
-
-  .timeline-left {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 8px;
-    flex-shrink: 0;
-    padding-top: 12px;
-  }
-
-  .timeline-year {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--gold);
-    width: 48px;
-    text-align: center;
-    letter-spacing: 0.05em;
-  }
-
-  .timeline-dot {
-    width: 12px;
-    height: 12px;
-    border-radius: 50%;
-    border: 1px solid var(--gold);
-    background: var(--obsidian);
-    flex-shrink: 0;
-  }
-
-  .timeline-dot.filled { background: var(--gold); }
-
-  .timeline-content {
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 20px 24px;
-    margin-bottom: 20px;
-    flex: 1;
-  }
-
-  .timeline-content h4 {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 20px;
-    color: var(--white);
-    margin-bottom: 8px;
-  }
-
-  .timeline-content p {
-    font-size: 13px;
-    color: var(--silver);
-    margin: 0;
-    line-height: 1.6;
-  }
-
-  /* WAR COST GRID */
-  .cost-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-    gap: 1px;
-    background: var(--border);
-    margin: 36px 0;
-  }
-
-  .cost-item {
-    background: var(--card);
-    padding: 20px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .cost-item-icon { font-size: 22px; }
-  .cost-item-title { font-size: 12px; font-weight: 600; color: var(--white); }
-  .cost-item-desc { font-size: 11px; color: var(--silver); line-height: 1.5; }
-
-  /* PATERSON TRICK BOX */
-  .trick-split {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
-    margin: 36px 0;
-  }
-
-  .trick-old {
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 28px;
-  }
-
-  .trick-new {
-    background: rgba(201,168,76,0.05);
-    border: 1px solid rgba(201,168,76,0.25);
-    padding: 28px;
-  }
-
-  .trick-tag {
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.3em;
-    text-transform: uppercase;
-    margin-bottom: 16px;
-  }
-
-  .trick-old .trick-tag { color: var(--silver); }
-  .trick-new .trick-tag { color: var(--gold); }
-
-  .trick-body { font-size: 14px; color: #999; line-height: 1.7; }
-  .trick-body strong { color: var(--white); }
-
-  /* INHERITANCE CHAIN */
-  .chain {
-    display: flex;
-    flex-direction: column;
-    gap: 0;
-    margin: 36px 0;
-    max-width: 400px;
-  }
-
-  .chain-link {
-    background: var(--card);
-    border: 1px solid var(--border);
-    border-bottom: none;
-    padding: 16px 24px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  .chain-link:last-child { border-bottom: 1px solid var(--border); }
-
-  .chain-link-left { font-size: 13px; color: #999; }
-  .chain-link-right {
-    font-family: 'Space Mono', monospace;
-    font-size: 12px;
-    color: var(--gold);
-  }
-
-  .chain-arrow {
-    text-align: center;
-    color: var(--border);
-    font-size: 18px;
-    line-height: 1;
-    position: relative;
-    left: 0;
-  }
-
-  /* BANK OF ENGLAND STRUCTURE */
-  .struct {
-    margin: 36px 0;
-    position: relative;
-  }
-
-  .struct-top {
-    background: rgba(201,168,76,0.08);
-    border: 1px solid rgba(201,168,76,0.3);
-    padding: 20px 28px;
-    text-align: center;
-  }
-
-  .struct-top-title {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
-    color: var(--gold);
-  }
-
-  .struct-top-sub { font-size: 12px; color: var(--silver); margin-top: 6px; }
-
-  .struct-connector {
-    display: flex;
-    justify-content: space-around;
-    padding: 0 40px;
-  }
-
-  .struct-connector-line {
-    width: 1px;
-    height: 30px;
-    background: var(--border);
-  }
-
-  .struct-row {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
-  }
-
-  .struct-node {
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 16px;
-    text-align: center;
-  }
-
-  .struct-node-title { font-size: 12px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
-  .struct-node-body { font-size: 11px; color: var(--silver); line-height: 1.4; }
-
-  /* FIVE STEPS */
-  .steps { margin: 36px 0; }
-
-  .step {
-    display: flex;
-    gap: 20px;
-    padding: 20px 0;
-    border-bottom: 1px solid var(--border);
-    align-items: flex-start;
-  }
-
-  .step:last-child { border-bottom: none; }
-
-  .step-num {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 48px;
-    font-weight: 700;
-    color: var(--border);
-    line-height: 1;
-    flex-shrink: 0;
-    width: 50px;
-    text-align: right;
-  }
-
-  .step-content { flex: 1; padding-top: 8px; }
-  .step-title { font-size: 14px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
-  .step-body { font-size: 13px; color: var(--silver); line-height: 1.6; }
-
-  /* ROTHSCHILD MAP */
-  .roth-grid {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 2px;
-    margin: 36px 0;
-  }
-
-  .roth-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 20px 14px;
-    text-align: center;
-  }
-
-  .roth-card-city {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--gold);
-    letter-spacing: 0.15em;
-    text-transform: uppercase;
-    margin-bottom: 8px;
-  }
-
-  .roth-card-name { font-size: 13px; color: var(--white); margin-bottom: 6px; }
-  .roth-card-role { font-size: 11px; color: var(--silver); }
-
-  /* BOND SPLIT VISUAL */
-  .bond-split { margin: 36px 0; }
-
-  .bond-before {
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 24px;
-    margin-bottom: 2px;
-  }
-
-  .bond-after {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: 2px;
-  }
-
-  .bond-mini {
-    background: rgba(201,168,76,0.12);
-    border: 1px solid rgba(201,168,76,0.2);
-    aspect-ratio: 1;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    color: var(--gold);
-  }
-
-  .bond-label {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--silver);
-    letter-spacing: 0.1em;
-    margin-bottom: 10px;
-  }
-
-  .bond-main-number {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 40px;
-    color: var(--white);
-    font-weight: 600;
-  }
-
-  /* DOMINO */
-  .domino-row {
-    display: flex;
-    align-items: flex-end;
-    gap: 8px;
-    margin: 36px 0;
-    flex-wrap: wrap;
-  }
-
-  .domino {
-    background: var(--card);
-    border: 1px solid var(--border);
-    width: 60px;
-    padding: 12px 8px;
-    text-align: center;
-    font-size: 10px;
-    color: var(--silver);
-    position: relative;
-    transition: transform 0.3s ease;
-  }
-
-  .domino.falling {
-    transform: rotate(80deg);
-    transform-origin: bottom left;
-    opacity: 0.3;
-  }
-
-  .domino-flag { font-size: 22px; margin-bottom: 6px; }
-  .domino-arrow { color: var(--gold-dim); font-size: 16px; padding-bottom: 8px; }
-
-  /* EAST INDIA TRAP */
-  .trap-flow {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin: 36px 0;
-  }
-
-  .trap-step {
-    display: flex;
-    align-items: stretch;
-    gap: 2px;
-  }
-
-  .trap-step-label {
-    background: rgba(201,168,76,0.08);
-    border: 1px solid rgba(201,168,76,0.2);
-    padding: 16px 20px;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--gold);
-    letter-spacing: 0.1em;
-    width: 130px;
-    flex-shrink: 0;
-    display: flex;
-    align-items: center;
-  }
-
-  .trap-step-body {
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 16px 20px;
-    font-size: 13px;
-    color: #999;
-    flex: 1;
-    line-height: 1.6;
-  }
-
-  .trap-step-body strong { color: var(--white); }
-
-  /* MONEY CREATION MECHANISM */
-  .mechanism {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    margin: 36px 0;
-  }
-
-  .mech-step {
-    display: grid;
-    grid-template-columns: 44px 1fr;
-    gap: 2px;
-  }
-
-  .mech-num {
-    background: rgba(201,168,76,0.1);
-    border: 1px solid rgba(201,168,76,0.2);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Space Mono', monospace;
-    font-size: 14px;
-    color: var(--gold);
-  }
-
-  .mech-content {
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 18px 20px;
-  }
-
-  .mech-title { font-size: 13px; font-weight: 600; color: var(--white); margin-bottom: 6px; }
-  .mech-body { font-size: 12px; color: var(--silver); line-height: 1.6; }
-  .mech-note {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--gold);
-    margin-top: 8px;
-    padding: 8px 12px;
-    background: rgba(201,168,76,0.06);
-    border-left: 2px solid var(--gold);
-  }
-
-  /* IMF CONDITIONS */
-  .conditions { margin: 36px 0; }
-
-  .condition {
-    display: flex;
-    gap: 20px;
-    align-items: flex-start;
-    padding: 20px 0;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .condition:last-child { border-bottom: none; }
-
-  .condition-num {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--danger-light);
-    flex-shrink: 0;
-    padding-top: 2px;
-  }
-
-  .condition-text { font-size: 14px; color: #999; line-height: 1.6; }
-  .condition-text strong { color: var(--white); }
-  .condition-impact {
-    font-size: 12px;
-    color: var(--danger-light);
-    margin-top: 6px;
-    font-style: italic;
-  }
-
-  /* GOLD PLEDGE — the 67 tonnes moment */
-  .gold-box {
-    background: var(--obsidian);
-    border: 1px solid rgba(201,168,76,0.3);
-    padding: 48px;
-    margin: 36px 0;
-    text-align: center;
-    position: relative;
-  }
-
-  .gold-box::before {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: radial-gradient(ellipse at center, rgba(201,168,76,0.05) 0%, transparent 70%);
-    pointer-events: none;
-  }
-
-  .gold-tonnes {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 96px;
-    font-weight: 700;
-    color: var(--gold);
-    line-height: 1;
-    display: block;
-  }
-
-  .gold-unit {
-    font-family: 'Space Mono', monospace;
-    font-size: 14px;
-    letter-spacing: 0.3em;
-    color: var(--gold-dim);
-    text-transform: uppercase;
-    margin-top: 8px;
-  }
-
-  .gold-context {
-    font-size: 14px;
-    color: var(--silver);
-    margin-top: 24px;
-    max-width: 400px;
-    margin-left: auto;
-    margin-right: auto;
-    line-height: 1.7;
-  }
-
-  /* PATTERN REPEATS */
-  .pattern-cards {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 2px;
-    margin: 36px 0;
-  }
-
-  .pattern-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 24px 20px;
-  }
-
-  .pattern-card-year {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--gold);
-    margin-bottom: 8px;
-    letter-spacing: 0.1em;
-  }
-
-  .pattern-card-country {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
-    color: var(--white);
-    margin-bottom: 12px;
-  }
-
-  .pattern-card-body { font-size: 12px; color: var(--silver); line-height: 1.6; }
-
-  /* EMI CALCULATION */
-  .emi-calc {
-    background: var(--card);
-    border: 1px solid var(--border);
-    margin: 36px 0;
-    overflow: hidden;
-  }
-
-  .emi-header {
-    background: rgba(201,168,76,0.06);
-    padding: 16px 24px;
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--gold);
-    letter-spacing: 0.2em;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .emi-row {
-    display: flex;
-    justify-content: space-between;
-    padding: 16px 24px;
-    border-bottom: 1px solid var(--border);
-    font-size: 14px;
-  }
-
-  .emi-row:last-child { border-bottom: none; }
-  .emi-row-label { color: var(--silver); }
-  .emi-row-value { font-family: 'Space Mono', monospace; color: var(--white); }
-  .emi-row.danger .emi-row-value { color: var(--danger-light); }
-  .emi-row.gold .emi-row-value { color: var(--gold); }
-
-  /* BOND HOLDERS */
-  .holders {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 2px;
-    margin: 36px 0;
-  }
-
-  .holder-box {
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 28px;
-  }
-
-  .holder-box-title {
-    font-family: 'Space Mono', monospace;
-    font-size: 10px;
-    color: var(--gold);
-    letter-spacing: 0.2em;
-    text-transform: uppercase;
-    margin-bottom: 20px;
-  }
-
-  .holder-item {
-    display: flex;
-    justify-content: space-between;
-    padding: 10px 0;
-    border-bottom: 1px solid var(--border);
-    font-size: 13px;
-  }
-
-  .holder-item:last-child { border-bottom: none; }
-  .holder-item-name { color: var(--silver); }
-  .holder-item-action { color: var(--white); font-style: italic; }
-
-  /* 4 ARCHITECTS SUMMARY */
-  .architects {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 2px;
-    margin: 36px 0;
-  }
-
-  .arch-card {
-    background: var(--card);
-    border: 1px solid var(--border);
-    padding: 28px 24px;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .arch-card::before {
-    content: '';
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    height: 2px;
-    background: var(--gold);
-    opacity: 0.4;
-  }
-
-  .arch-year {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    color: var(--gold-dim);
-    letter-spacing: 0.1em;
-    margin-bottom: 12px;
-  }
-
-  .arch-name {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 28px;
-    color: var(--white);
-    margin-bottom: 8px;
-  }
-
-  .arch-action {
-    font-size: 13px;
-    color: var(--gold);
-    margin-bottom: 16px;
-    font-style: italic;
-  }
-
-  .arch-body { font-size: 12px; color: var(--silver); line-height: 1.6; }
-
-  /* WHAT TO DO */
-  .todo-list { margin: 36px 0; }
-
-  .todo-item {
-    display: flex;
-    gap: 20px;
-    padding: 24px 0;
-    border-bottom: 1px solid var(--border);
-    align-items: flex-start;
-  }
-
-  .todo-item:last-child { border-bottom: none; }
-
-  .todo-icon {
-    width: 36px;
-    height: 36px;
-    border: 1px solid var(--gold);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 20px;
-    color: var(--gold);
-    flex-shrink: 0;
-  }
-
-  .todo-content { flex: 1; }
-  .todo-title { font-size: 15px; font-weight: 600; color: var(--white); margin-bottom: 8px; }
-  .todo-body { font-size: 13px; color: var(--silver); line-height: 1.7; }
-
-  /* FINAL CLOSING */
-  .closing {
-    text-align: center;
-    padding: 120px 60px;
-    max-width: none;
-    border-top: 1px solid var(--border);
-  }
-
-  .closing-logo {
-    font-family: 'Space Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 0.5em;
-    color: var(--gold);
-    margin-bottom: 40px;
-    text-transform: uppercase;
-  }
-
-  .closing-statement {
-    font-family: 'Cormorant Garamond', serif;
-    font-size: clamp(28px, 4vw, 52px);
-    font-weight: 300;
-    color: var(--white);
-    max-width: 700px;
-    margin: 0 auto 40px;
-    line-height: 1.2;
-  }
-
-  .closing-statement em { color: var(--gold); font-style: italic; }
-
-  .closing-sub {
-    font-size: 13px;
-    color: var(--silver);
-    letter-spacing: 0.1em;
-  }
-
-  /* REVEAL ANIMATIONS */
-  .reveal {
-    opacity: 0;
-    transform: translateY(24px);
-    transition: opacity 0.7s ease, transform 0.7s ease;
-  }
-
-  .reveal.visible {
-    opacity: 1;
-    transform: none;
-  }
-
-  .reveal-delay-1 { transition-delay: 0.1s; }
-  .reveal-delay-2 { transition-delay: 0.2s; }
-  .reveal-delay-3 { transition-delay: 0.3s; }
-
-  /* QUOTE */
-  .quote {
-    border-left: 2px solid var(--gold);
-    padding: 16px 24px;
-    margin: 36px 0;
-    font-family: 'Cormorant Garamond', serif;
-    font-size: 22px;
-    font-style: italic;
-    color: var(--white);
-    line-height: 1.5;
-  }
-
-  .quote em { color: var(--gold); font-style: normal; }
-
-  /* UTILITY */
-  .gold-text { color: var(--gold); }
-  .silver-text { color: var(--silver); }
-  .mono { font-family: 'Space Mono', monospace; }
-  .danger-text { color: var(--danger-light); }
-
-  .divider {
-    height: 1px;
-    background: linear-gradient(to right, transparent, var(--border), transparent);
-    margin: 40px 0;
-  }
-
-  .label-tag {
-    display: inline-block;
-    font-family: 'Space Mono', monospace;
-    font-size: 9px;
-    letter-spacing: 0.25em;
-    text-transform: uppercase;
-    padding: 4px 10px;
-    border: 1px solid var(--border);
-    color: var(--silver);
-    margin-bottom: 20px;
-  }
-
-  .label-tag.gold {
-    border-color: rgba(201,168,76,0.3);
-    color: var(--gold);
-  }
-
-  @media (max-width: 700px) {
-    section { padding: 60px 24px 60px 48px; }
-    .spine { left: 16px; }
-    .spine-dot { left: 11px; }
-    .roth-grid { grid-template-columns: repeat(3, 1fr); }
-    .architects { grid-template-columns: 1fr; }
-    .holders { grid-template-columns: 1fr; }
-    .pattern-cards { grid-template-columns: 1fr; }
-    .trick-split { grid-template-columns: 1fr; }
-    .debt-vs-gdp { grid-template-columns: 1fr; }
-    .hero { padding: 60px 24px 60px 48px; }
-    .gold-tonnes { font-size: 64px; }
-    .struct-row { grid-template-columns: 1fr; }
-  }
+:root {
+  --obsidian: #070707;
+  --surface: #0c0c0c;
+  --card: #0f0f0f;
+  --border: #1e1e1e;
+  --border-md: #262626;
+  --gold: #c9a84c;
+  --gold-dim: #8a6f2e;
+  --gold-pale: #e8d49a;
+  --gold-glow: rgba(201,168,76,0.07);
+  --gold-glow-md: rgba(201,168,76,0.13);
+  --silver: #787878;
+  --silver-lt: #9c9c9c;
+  --white: #e6e6e6;
+  --danger-lt: #c44;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  background:var(--obsidian);
+  color:var(--white);
+  font-family:'Inter',sans-serif;
+  font-weight:300;
+  line-height:1.75;
+  overflow-x:hidden;
+  -webkit-font-smoothing:antialiased;
+}
+
+/* ── PROGRESS BAR ── */
+#progress-bar{
+  position:fixed;top:0;left:0;
+  width:0%;height:2px;
+  background:linear-gradient(to right,var(--gold-dim),var(--gold),var(--gold-pale));
+  z-index:200;
+  transition:width .08s linear;
+}
+
+/* ── SPINE ── */
+.spine{
+  position:fixed;left:26px;top:0;bottom:0;width:1px;
+  background:linear-gradient(to bottom,transparent 0%,var(--gold-dim) 10%,rgba(201,168,76,.2) 50%,var(--gold-dim) 90%,transparent 100%);
+  z-index:10;
+}
+.spine-dot{
+  position:fixed;left:21px;top:50%;
+  width:11px;height:11px;border-radius:50%;
+  background:var(--gold);z-index:11;
+  transform:translateY(-50%);
+  box-shadow:0 0 14px rgba(201,168,76,.65),0 0 4px var(--gold);
+  transition:top .12s cubic-bezier(.16,1,.3,1);
+}
+
+/* ── CHAPTER EYEBROW ── */
+.chapter-eyebrow{
+  font-family:'Space Mono',monospace;
+  font-size:9.5px;letter-spacing:.35em;
+  color:var(--gold);text-transform:uppercase;
+  margin-bottom:14px;opacity:.85;
+  display:flex;align-items:center;gap:12px;
+}
+.chapter-eyebrow::before{
+  content:'';display:inline-block;
+  width:22px;height:1px;
+  background:var(--gold);opacity:.55;flex-shrink:0;
+}
+
+/* ── SECTIONS ── */
+section{
+  max-width:880px;margin:0 auto;
+  padding:88px 64px 88px 84px;
+  position:relative;
+}
+section+section{border-top:1px solid var(--border)}
+
+/* ── HERO ── */
+.hero{
+  min-height:100vh;display:flex;
+  flex-direction:column;justify-content:center;
+  padding:88px 64px 88px 108px;
+  max-width:none;position:relative;overflow:hidden;
+}
+.hero::before{
+  content:'';position:absolute;inset:0;
+  background:
+    radial-gradient(ellipse at 14% 44%,rgba(201,168,76,.055) 0%,transparent 52%),
+    radial-gradient(ellipse at 82% 58%,rgba(201,168,76,.025) 0%,transparent 48%);
+  pointer-events:none;
+}
+.hero::after{
+  content:'';position:absolute;bottom:0;left:0;right:0;
+  height:140px;
+  background:linear-gradient(to bottom,transparent,var(--obsidian));
+  pointer-events:none;
+}
+.hero-label{
+  font-family:'Space Mono',monospace;
+  font-size:10px;letter-spacing:.5em;
+  color:var(--gold);margin-bottom:38px;
+  display:flex;align-items:center;gap:16px;
+}
+.hero-label::after{
+  content:'';display:block;
+  width:44px;height:1px;
+  background:var(--gold);opacity:.4;
+}
+.hero-title{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(40px,6.5vw,90px);
+  font-weight:300;line-height:1.04;
+  color:var(--white);margin-bottom:26px;
+  max-width:740px;letter-spacing:-.01em;
+}
+.hero-title em{font-style:italic;color:var(--gold)}
+.hero-subtitle{
+  font-size:clamp(13px,1.5vw,15px);
+  color:var(--silver);max-width:460px;
+  line-height:1.9;margin-bottom:60px;font-weight:300;
+}
+.hero-stat-row{display:flex;gap:clamp(28px,4.5vw,60px);flex-wrap:wrap}
+.hero-stat{display:flex;flex-direction:column;gap:6px;position:relative}
+.hero-stat+.hero-stat::before{
+  content:'';position:absolute;
+  left:-16px;top:0;bottom:0;width:1px;
+  background:var(--border-md);
+}
+.hero-stat-number{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(26px,3.2vw,38px);
+  font-weight:600;color:var(--gold);
+  line-height:1;letter-spacing:-.02em;
+}
+.hero-stat-label{
+  font-size:9.5px;letter-spacing:.18em;
+  color:var(--silver);text-transform:uppercase;
+  font-family:'Space Mono',monospace;
+}
+
+/* ── HEADINGS ── */
+h2{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(26px,3.8vw,52px);
+  font-weight:300;line-height:1.12;
+  margin-bottom:24px;color:var(--white);
+  letter-spacing:-.01em;
+}
+h2 .gold{color:var(--gold)}
+h2 em{font-style:italic}
+h3{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(19px,2.3vw,27px);
+  font-weight:400;color:var(--white);
+  margin-bottom:14px;margin-top:48px;
+  letter-spacing:.01em;
+}
+p{
+  font-size:clamp(13px,1.4vw,14.5px);
+  color:#aaa;margin-bottom:20px;line-height:1.9;
+}
+p strong{color:var(--white);font-weight:500}
+p em{color:var(--gold);font-style:italic}
+
+/* ── CALLOUT ── */
+.callout{
+  background:var(--card);
+  border:1px solid var(--border-md);
+  border-left:3px solid var(--gold);
+  padding:26px 30px;margin:36px 0;
+  position:relative;overflow:hidden;
+}
+.callout::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(201,168,76,.04) 0%,transparent 55%);
+  pointer-events:none;
+}
+.callout-number{
+  font-family:'Cormorant Garamond',serif;
+  font-size:60px;font-weight:700;
+  color:var(--gold);line-height:1;display:block;
+}
+.callout-label{
+  font-size:10px;letter-spacing:.2em;
+  color:var(--silver);text-transform:uppercase;
+  margin-top:8px;font-family:'Space Mono',monospace;
+}
+.callout-body{
+  font-size:13.5px;color:#999;
+  margin-top:14px;line-height:1.78;
+}
+
+/* ── DEBT BARS ── */
+.debt-bars{margin:36px 0}
+.debt-bar-row{
+  display:flex;align-items:center;
+  gap:14px;margin-bottom:15px;
+}
+.debt-bar-label{
+  font-family:'Space Mono',monospace;
+  font-size:10px;color:var(--silver-lt);
+  width:60px;flex-shrink:0;letter-spacing:.06em;
+}
+.debt-bar-track{
+  flex:1;height:5px;
+  background:var(--border);border-radius:1px;
+  position:relative;
+}
+.debt-bar-fill{
+  height:100%;
+  background:linear-gradient(to right,var(--gold-dim),var(--gold));
+  border-radius:1px;
+  transition:width 1.4s cubic-bezier(.16,1,.3,1);width:0;
+}
+.debt-bar-value{
+  font-family:'Space Mono',monospace;
+  font-size:10px;color:var(--gold);
+  width:105px;flex-shrink:0;text-align:right;
+}
+
+/* ── DEBT VS GDP ── */
+.debt-vs-gdp{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:2px;margin:36px 0;
+  font-family:'Space Mono',monospace;
+}
+.dvg-box{padding:26px;display:flex;flex-direction:column;gap:10px}
+.dvg-box.debt{background:rgba(201,168,76,.05);border:1px solid rgba(201,168,76,.2)}
+.dvg-box.gdp{background:var(--card);border:1px solid var(--border-md)}
+.dvg-number{font-size:clamp(26px,3.2vw,38px);font-weight:700;letter-spacing:-.02em}
+.dvg-box.debt .dvg-number{color:var(--gold)}
+.dvg-box.gdp .dvg-number{color:var(--silver)}
+.dvg-label{font-size:9px;color:var(--silver);letter-spacing:.2em;text-transform:uppercase}
+.dvg-sub{font-size:9.5px;color:#444;margin-top:3px}
+.ratio-line{
+  grid-column:1/-1;background:var(--card);
+  border:1px solid var(--border-md);
+  padding:18px 26px;
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:12px;color:var(--silver);
+}
+.ratio-line strong{color:var(--danger-lt);font-size:clamp(16px,2vw,22px)}
+
+/* ── FLOW DIAGRAM ── */
+.flow{
+  display:flex;align-items:stretch;
+  gap:0;margin:36px 0;flex-wrap:wrap;
+}
+.flow-node{
+  flex:1;min-width:110px;
+  background:var(--card);
+  border:1px solid var(--border-md);
+  border-right:none;
+  padding:18px 12px;text-align:center;
+}
+.flow-node:last-of-type{border-right:1px solid var(--border-md)}
+.flow-node-icon{font-size:22px;margin-bottom:9px;display:block}
+.flow-node-title{font-size:10.5px;font-weight:600;color:var(--white);letter-spacing:.04em;margin-bottom:5px}
+.flow-node-sub{font-size:9.5px;color:var(--silver);line-height:1.5}
+.flow-arrow{
+  display:flex;align-items:center;
+  padding:0 6px;color:var(--gold-dim);
+  font-size:14px;flex-shrink:0;
+}
+
+/* ── TIMELINE ── */
+.timeline{margin:40px 0}
+.timeline-item{
+  display:flex;gap:18px;
+  margin-bottom:0;position:relative;
+}
+.timeline-item::before{
+  content:'';position:absolute;
+  left:32px;top:46px;bottom:-20px;
+  width:1px;background:var(--border);
+}
+.timeline-item:last-child::before{display:none}
+.timeline-left{
+  display:flex;flex-direction:column;
+  align-items:center;gap:6px;
+  flex-shrink:0;padding-top:10px;
+}
+.timeline-year{
+  font-family:'Space Mono',monospace;
+  font-size:9.5px;color:var(--gold);
+  width:42px;text-align:center;letter-spacing:.04em;
+}
+.timeline-dot{
+  width:10px;height:10px;border-radius:50%;
+  border:1px solid var(--gold);
+  background:var(--obsidian);flex-shrink:0;
+}
+.timeline-dot.filled{background:var(--gold)}
+.timeline-content{
+  background:var(--card);border:1px solid var(--border-md);
+  padding:17px 21px;margin-bottom:18px;flex:1;
+}
+.timeline-content h4{
+  font-family:'Cormorant Garamond',serif;
+  font-size:17px;color:var(--white);margin-bottom:7px;
+}
+.timeline-content p{font-size:12.5px;color:var(--silver);margin:0;line-height:1.65}
+
+/* ── COST GRID ── */
+.cost-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(175px,1fr));
+  gap:2px;background:var(--border);margin:36px 0;
+}
+.cost-item{background:var(--card);padding:18px;display:flex;flex-direction:column;gap:7px}
+.cost-item-icon{font-size:20px}
+.cost-item-title{font-size:11.5px;font-weight:600;color:var(--white);letter-spacing:.02em}
+.cost-item-desc{font-size:10.5px;color:var(--silver);line-height:1.55}
+
+/* ── TRICK SPLIT ── */
+.trick-split{
+  display:grid;grid-template-columns:1fr 1fr;
+  gap:2px;margin:36px 0;
+}
+.trick-old{background:var(--card);border:1px solid var(--border-md);padding:22px}
+.trick-new{background:rgba(201,168,76,.04);border:1px solid rgba(201,168,76,.2);padding:22px}
+.trick-tag{
+  font-family:'Space Mono',monospace;
+  font-size:8.5px;letter-spacing:.3em;
+  text-transform:uppercase;margin-bottom:13px;display:block;
+}
+.trick-old .trick-tag{color:var(--silver)}
+.trick-new .trick-tag{color:var(--gold)}
+.trick-body{font-size:13px;color:#9a9a9a;line-height:1.75}
+.trick-body strong{color:var(--white)}
+
+/* ── CHAIN ── */
+.chain{
+  display:flex;flex-direction:column;
+  gap:0;margin:36px 0;max-width:400px;
+}
+.chain-link{
+  background:var(--card);border:1px solid var(--border-md);
+  border-bottom:none;padding:14px 20px;
+  display:flex;justify-content:space-between;align-items:center;
+}
+.chain-link:last-child{border-bottom:1px solid var(--border-md)}
+.chain-link-left{font-size:12.5px;color:#999}
+.chain-link-right{font-family:'Space Mono',monospace;font-size:11px;color:var(--gold)}
+.chain-arrow{text-align:center;color:var(--border-md);font-size:16px;line-height:1}
+
+/* ── BANK STRUCTURE ── */
+.struct{margin:36px 0;position:relative}
+.struct-top{
+  background:rgba(201,168,76,.06);
+  border:1px solid rgba(201,168,76,.22);
+  padding:17px 22px;text-align:center;
+}
+.struct-top-title{font-family:'Cormorant Garamond',serif;font-size:20px;color:var(--gold)}
+.struct-top-sub{
+  font-size:10px;color:var(--silver);margin-top:5px;
+  font-family:'Space Mono',monospace;letter-spacing:.1em;
+}
+.struct-connector{
+  display:flex;justify-content:space-around;padding:0 40px;
+}
+.struct-connector-line{width:1px;height:26px;background:var(--border-md)}
+.struct-row{display:grid;grid-template-columns:repeat(3,1fr);gap:2px}
+.struct-node{background:var(--card);border:1px solid var(--border-md);padding:15px;text-align:center}
+.struct-node-title{font-size:11px;font-weight:600;color:var(--white);margin-bottom:7px;letter-spacing:.03em}
+.struct-node-body{font-size:9.5px;color:var(--silver);line-height:1.55}
+
+/* ── STEPS ── */
+.steps{margin:36px 0}
+.step{
+  display:flex;gap:18px;padding:18px 0;
+  border-bottom:1px solid var(--border);align-items:flex-start;
+}
+.step:last-child{border-bottom:none}
+.step-num{
+  font-family:'Cormorant Garamond',serif;
+  font-size:42px;font-weight:700;
+  color:var(--border-md);line-height:1;
+  flex-shrink:0;width:46px;text-align:right;
+}
+.step-content{flex:1;padding-top:5px}
+.step-title{font-size:12.5px;font-weight:600;color:var(--white);margin-bottom:5px;letter-spacing:.02em}
+.step-body{font-size:11.5px;color:var(--silver);line-height:1.65}
+
+/* ── ROTHSCHILD GRID ── */
+.roth-grid{
+  display:grid;grid-template-columns:repeat(5,1fr);
+  gap:2px;margin:36px 0;
+}
+.roth-card{background:var(--card);border:1px solid var(--border-md);padding:17px 11px;text-align:center}
+.roth-card-city{
+  font-family:'Space Mono',monospace;
+  font-size:8.5px;color:var(--gold);
+  letter-spacing:.15em;text-transform:uppercase;
+  margin-bottom:7px;display:block;
+}
+.roth-card-name{font-size:11.5px;color:var(--white);margin-bottom:5px;font-weight:500}
+.roth-card-role{font-size:9.5px;color:var(--silver);line-height:1.5}
+
+/* ── BOND SPLIT ── */
+.bond-split{margin:36px 0}
+.bond-before{background:var(--card);border:1px solid var(--border-md);padding:21px;margin-bottom:2px}
+.bond-after{display:grid;grid-template-columns:repeat(10,1fr);gap:2px}
+.bond-mini{
+  background:rgba(201,168,76,.1);
+  border:1px solid rgba(201,168,76,.17);
+  aspect-ratio:1;display:flex;
+  align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;
+  font-size:7.5px;color:var(--gold);
+}
+.bond-label{
+  font-family:'Space Mono',monospace;font-size:9px;
+  color:var(--silver);letter-spacing:.1em;
+  margin-bottom:9px;display:block;text-transform:uppercase;
+}
+.bond-main-number{
+  font-family:'Cormorant Garamond',serif;
+  font-size:34px;color:var(--white);font-weight:600;
+}
+
+/* ── DOMINO ── */
+.domino-row{
+  display:flex;align-items:flex-end;
+  gap:7px;margin:36px 0;flex-wrap:wrap;
+}
+.domino{
+  background:var(--card);border:1px solid var(--border-md);
+  width:58px;padding:10px 6px;
+  text-align:center;font-size:9.5px;color:var(--silver);
+  transition:transform .4s ease,opacity .4s ease;
+}
+.domino.falling{
+  transform:rotate(80deg);
+  transform-origin:bottom left;opacity:.22;
+}
+.domino-flag{font-size:19px;margin-bottom:5px}
+.domino-arrow{color:var(--gold-dim);font-size:13px;padding-bottom:6px}
+
+/* ── TRAP FLOW ── */
+.trap-flow{display:flex;flex-direction:column;gap:2px;margin:36px 0}
+.trap-step{display:flex;align-items:stretch;gap:2px}
+.trap-step-label{
+  background:rgba(201,168,76,.07);
+  border:1px solid rgba(201,168,76,.17);
+  padding:13px 15px;
+  font-family:'Space Mono',monospace;font-size:9px;
+  color:var(--gold);letter-spacing:.11em;
+  width:105px;flex-shrink:0;display:flex;align-items:center;
+  text-transform:uppercase;
+}
+.trap-step-body{
+  background:var(--card);border:1px solid var(--border-md);
+  padding:13px 17px;font-size:12px;color:#9a9a9a;flex:1;line-height:1.65;
+}
+.trap-step-body strong{color:var(--white)}
+
+/* ── MECHANISM ── */
+.mechanism{display:flex;flex-direction:column;gap:2px;margin:36px 0}
+.mech-step{display:grid;grid-template-columns:38px 1fr;gap:2px}
+.mech-num{
+  background:rgba(201,168,76,.08);
+  border:1px solid rgba(201,168,76,.17);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Space Mono',monospace;font-size:12.5px;color:var(--gold);
+}
+.mech-content{background:var(--card);border:1px solid var(--border-md);padding:15px 17px}
+.mech-title{font-size:12px;font-weight:600;color:var(--white);margin-bottom:5px}
+.mech-body{font-size:11.5px;color:var(--silver);line-height:1.62}
+.mech-note{
+  font-family:'Space Mono',monospace;font-size:9.5px;
+  color:var(--gold);margin-top:8px;
+  padding:6px 10px;
+  background:rgba(201,168,76,.06);
+  border-left:2px solid var(--gold);
+}
+
+/* ── CONDITIONS ── */
+.conditions{margin:36px 0}
+.condition{
+  display:flex;gap:18px;align-items:flex-start;
+  padding:17px 0;border-bottom:1px solid var(--border);
+}
+.condition:last-child{border-bottom:none}
+.condition-num{
+  font-family:'Space Mono',monospace;
+  font-size:10px;color:var(--danger-lt);
+  flex-shrink:0;padding-top:2px;width:22px;
+}
+.condition-text{font-size:13px;color:#9a9a9a;line-height:1.65}
+.condition-text strong{color:var(--white)}
+.condition-impact{font-size:11px;color:var(--danger-lt);margin-top:6px;font-style:italic}
+
+/* ── GOLD BOX ── */
+.gold-box{
+  background:var(--obsidian);
+  border:1px solid rgba(201,168,76,.24);
+  padding:46px 30px;margin:36px 0;
+  text-align:center;position:relative;overflow:hidden;
+}
+.gold-box::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at center,rgba(201,168,76,.055) 0%,transparent 62%);
+  pointer-events:none;
+}
+.gold-tonnes{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(64px,9.5vw,96px);
+  font-weight:700;color:var(--gold);
+  line-height:1;display:block;
+}
+.gold-unit{
+  font-family:'Space Mono',monospace;
+  font-size:11.5px;letter-spacing:.24em;
+  color:var(--gold-dim);text-transform:uppercase;margin-top:10px;
+}
+.gold-context{
+  font-size:13.5px;color:var(--silver);
+  margin:22px auto 0;max-width:420px;line-height:1.78;
+}
+
+/* ── PATTERN CARDS ── */
+.pattern-cards{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:2px;margin:36px 0;
+}
+.pattern-card{background:var(--card);border:1px solid var(--border-md);padding:20px 16px}
+.pattern-card-year{
+  font-family:'Space Mono',monospace;font-size:9.5px;
+  color:var(--gold);margin-bottom:7px;
+  letter-spacing:.1em;display:block;
+}
+.pattern-card-country{
+  font-family:'Cormorant Garamond',serif;
+  font-size:20px;color:var(--white);margin-bottom:10px;
+}
+.pattern-card-body{font-size:11px;color:var(--silver);line-height:1.65}
+
+/* ── EMI CALC ── */
+.emi-calc{background:var(--card);border:1px solid var(--border-md);margin:36px 0;overflow:hidden}
+.emi-header{
+  background:rgba(201,168,76,.05);
+  padding:13px 21px;
+  font-family:'Space Mono',monospace;font-size:8.5px;
+  color:var(--gold);letter-spacing:.2em;
+  border-bottom:1px solid var(--border-md);text-transform:uppercase;
+}
+.emi-row{
+  display:flex;justify-content:space-between;
+  padding:13px 21px;border-bottom:1px solid var(--border);
+  font-size:13px;gap:14px;align-items:center;
+}
+.emi-row:last-child{border-bottom:none}
+.emi-row-label{color:var(--silver);flex:1}
+.emi-row-value{
+  font-family:'Space Mono',monospace;
+  color:var(--white);flex-shrink:0;
+  text-align:right;font-size:11.5px;
+}
+.emi-row.danger .emi-row-value{color:var(--danger-lt)}
+.emi-row.gold .emi-row-value{color:var(--gold)}
+
+/* ── HOLDERS ── */
+.holders{display:grid;grid-template-columns:1fr 1fr;gap:2px;margin:36px 0}
+.holder-box{background:var(--card);border:1px solid var(--border-md);padding:22px}
+.holder-box-title{
+  font-family:'Space Mono',monospace;font-size:8.5px;
+  color:var(--gold);letter-spacing:.2em;
+  text-transform:uppercase;margin-bottom:17px;display:block;
+}
+.holder-item{
+  display:flex;justify-content:space-between;
+  padding:9px 0;border-bottom:1px solid var(--border);
+  font-size:12px;gap:8px;align-items:center;
+}
+.holder-item:last-child{border-bottom:none}
+.holder-item-name{color:var(--silver)}
+.holder-item-action{color:var(--white);font-style:italic;font-size:11px;text-align:right;flex-shrink:0}
+
+/* ── ARCHITECTS ── */
+.architects{display:grid;grid-template-columns:repeat(2,1fr);gap:2px;margin:36px 0}
+.arch-card{
+  background:var(--card);border:1px solid var(--border-md);
+  padding:24px 20px;position:relative;overflow:hidden;
+}
+.arch-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:linear-gradient(to right,var(--gold-dim),var(--gold));opacity:.45;
+}
+.arch-year{
+  font-family:'Space Mono',monospace;font-size:9.5px;
+  color:var(--gold-dim);letter-spacing:.11em;
+  margin-bottom:11px;text-transform:uppercase;
+}
+.arch-name{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(20px,2.4vw,26px);
+  color:var(--white);margin-bottom:5px;line-height:1.1;
+}
+.arch-action{font-size:11.5px;color:var(--gold);margin-bottom:13px;font-style:italic}
+.arch-body{font-size:11.5px;color:var(--silver);line-height:1.65}
+
+/* ── TODO ── */
+.todo-list{margin:36px 0}
+.todo-item{
+  display:flex;gap:17px;padding:20px 0;
+  border-bottom:1px solid var(--border);align-items:flex-start;
+}
+.todo-item:last-child{border-bottom:none}
+.todo-icon{
+  width:33px;height:33px;border:1px solid var(--gold);
+  display:flex;align-items:center;justify-content:center;
+  font-family:'Cormorant Garamond',serif;
+  font-size:17px;color:var(--gold);flex-shrink:0;
+}
+.todo-content{flex:1}
+.todo-title{font-size:13.5px;font-weight:600;color:var(--white);margin-bottom:7px;letter-spacing:.01em}
+.todo-body{font-size:11.5px;color:var(--silver);line-height:1.82}
+
+/* ── CLOSING ── */
+.closing{
+  text-align:center;padding:96px 60px;
+  max-width:none;border-top:1px solid var(--border);
+  position:relative;overflow:hidden;
+}
+.closing::before{
+  content:'';position:absolute;inset:0;
+  background:radial-gradient(ellipse at center 32%,rgba(201,168,76,.045) 0%,transparent 58%);
+  pointer-events:none;
+}
+.closing-logo{
+  font-family:'Space Mono',monospace;
+  font-size:10px;letter-spacing:.6em;
+  color:var(--gold);margin-bottom:38px;text-transform:uppercase;
+}
+.closing-statement{
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(22px,3.8vw,48px);
+  font-weight:300;color:var(--white);
+  max-width:660px;margin:0 auto 34px;
+  line-height:1.25;letter-spacing:-.01em;
+}
+.closing-statement em{color:var(--gold);font-style:italic}
+.closing-sub{
+  font-size:11px;color:var(--silver);
+  letter-spacing:.13em;text-transform:uppercase;
+  font-family:'Space Mono',monospace;
+}
+
+/* ── REVEAL ANIMATIONS ── */
+.reveal{
+  opacity:0;transform:translateY(18px);
+  transition:opacity .75s ease,transform .75s ease;
+}
+.reveal.visible{opacity:1;transform:none}
+.reveal-delay-1{transition-delay:.1s}
+.reveal-delay-2{transition-delay:.2s}
+.reveal-delay-3{transition-delay:.3s}
+
+/* ── QUOTE ── */
+.quote{
+  border-left:2px solid var(--gold);
+  padding:15px 22px;margin:36px 0;
+  font-family:'Cormorant Garamond',serif;
+  font-size:clamp(17px,2.1vw,21px);
+  font-style:italic;color:var(--white);line-height:1.55;
+  background:rgba(201,168,76,.022);
+}
+.quote em{color:var(--gold);font-style:normal}
+
+/* ── UTILITIES ── */
+.gold-text{color:var(--gold)}
+.silver-text{color:var(--silver)}
+.mono{font-family:'Space Mono',monospace}
+.danger-text{color:var(--danger-lt)}
+.divider{
+  height:1px;
+  background:linear-gradient(to right,transparent,var(--border-md),transparent);
+  margin:40px 0;
+}
+.label-tag{
+  display:inline-block;font-family:'Space Mono',monospace;
+  font-size:8.5px;letter-spacing:.25em;text-transform:uppercase;
+  padding:4px 10px;border:1px solid var(--border-md);
+  color:var(--silver);margin-bottom:18px;
+}
+.label-tag.gold{border-color:rgba(201,168,76,.3);color:var(--gold)}
+
+/* ════════════════════════════════════
+   RESPONSIVE — TABLET  ≤1024px
+════════════════════════════════════ */
+@media(max-width:1024px){
+  section{padding:72px 44px 72px 64px}
+  .hero{padding:72px 44px 72px 80px}
+  .roth-grid{grid-template-columns:repeat(3,1fr)}
+  .cost-grid{grid-template-columns:repeat(2,1fr)}
+  .pattern-cards{grid-template-columns:repeat(2,1fr)}
+}
+
+/* ════════════════════════════════════
+   RESPONSIVE — MOBILE  ≤640px
+════════════════════════════════════ */
+@media(max-width:640px){
+  section{padding:52px 18px 52px 38px}
+  .spine{left:14px}
+  .spine-dot{left:9px}
+  .hero{padding:60px 18px 60px 38px;min-height:100svh}
+  .hero-stat-row{gap:20px}
+  .hero-stat+.hero-stat::before{display:none}
+  .hero-title{font-size:clamp(34px,9vw,52px)}
+
+  .roth-grid{grid-template-columns:repeat(2,1fr)}
+  .architects{grid-template-columns:1fr}
+  .holders{grid-template-columns:1fr}
+  .pattern-cards{grid-template-columns:1fr 1fr}
+  .trick-split{grid-template-columns:1fr}
+  .debt-vs-gdp{grid-template-columns:1fr}
+  .struct-row{grid-template-columns:1fr}
+  .cost-grid{grid-template-columns:1fr 1fr}
+
+  .flow{flex-direction:column;gap:2px}
+  .flow-node{min-width:unset;border-right:1px solid var(--border-md);border-bottom:none}
+  .flow-node:last-of-type{border-bottom:1px solid var(--border-md)}
+  .flow-arrow{transform:rotate(90deg);justify-content:center;padding:4px 0}
+
+  .trap-step{flex-direction:column}
+  .trap-step-label{width:100%;padding:9px 13px}
+
+  .debt-vs-gdp .ratio-line{flex-direction:column;gap:6px;text-align:center}
+
+  .domino-row{gap:5px}
+  .domino{width:50px;font-size:8.5px}
+  .domino-flag{font-size:17px}
+
+  .gold-tonnes{font-size:clamp(52px,14vw,80px)}
+
+  .closing{padding:60px 18px 60px 38px}
+
+  h3{margin-top:36px}
+  .emi-row{font-size:12px}
+  .holder-item{flex-direction:column;gap:3px;align-items:flex-start}
+  .holder-item-action{text-align:left}
+}
+
+/* ════════════════════════════════════
+   RESPONSIVE — XS  ≤380px
+════════════════════════════════════ */
+@media(max-width:380px){
+  section{padding:44px 14px 44px 30px}
+  .hero{padding:52px 14px 52px 30px}
+  .spine{left:11px}
+  .spine-dot{left:6px}
+  .pattern-cards{grid-template-columns:1fr}
+  .cost-grid{grid-template-columns:1fr}
+  .roth-grid{grid-template-columns:repeat(2,1fr)}
+  .bond-after{grid-template-columns:repeat(5,1fr)}
+}
 </style>
 </head>
 <body>
 
+<div id="progress-bar"></div>
 <div class="spine"></div>
 <div class="spine-dot" id="spineDot"></div>
 
@@ -1157,19 +777,19 @@
   <p class="hero-subtitle">How four architects across three centuries built a debt system so complete, so structurally embedded — that escaping it would require dismantling money itself.</p>
   <div class="hero-stat-row">
     <div class="hero-stat">
-      <span class="hero-stat-number">$340T</span>
+      <span class="hero-stat-number">$350T</span>
       <span class="hero-stat-label">Global Debt</span>
     </div>
     <div class="hero-stat">
-      <span class="hero-stat-number">$100T</span>
+      <span class="hero-stat-number">$110T</span>
       <span class="hero-stat-label">Global GDP</span>
     </div>
     <div class="hero-stat">
-      <span class="hero-stat-number">3×</span>
+      <span class="hero-stat-number">3.2×</span>
       <span class="hero-stat-label">Debt / Income Ratio</span>
     </div>
     <div class="hero-stat">
-      <span class="hero-stat-number">330yrs</span>
+      <span class="hero-stat-number">332yrs</span>
       <span class="hero-stat-label">System Age</span>
     </div>
   </div>
@@ -1182,22 +802,22 @@
   <div class="chapter-eyebrow reveal">Chapter 01 — The Paradox</div>
   <h2 class="reveal">The Number That <em>Should Not Exist</em></h2>
 
-  <p class="reveal">The video opens with a fact that collapses the moment you sit with it. The world carries <strong>$340 trillion in debt</strong> — yet the entire global economy produces only <strong>$100 trillion</strong> per year. The debt is three times the world's total annual income. This is not a crisis. This is the intended state.</p>
+  <p class="reveal">The video opens with a fact that collapses the moment you sit with it. The world carries <strong>$350 trillion in debt</strong> — yet the entire global economy produces only <strong>$110 trillion</strong> per year. The debt is more than three times the world's total annual income. This is not a crisis. This is the intended state.</p>
 
   <div class="debt-vs-gdp reveal">
     <div class="dvg-box debt">
-      <span class="dvg-number">$340T</span>
+      <span class="dvg-number">$350T</span>
       <div class="dvg-label">Total Global Debt</div>
       <div class="dvg-sub">IIF Global Debt Monitor</div>
     </div>
     <div class="dvg-box gdp">
-      <span class="dvg-number">$100T</span>
+      <span class="dvg-number">$110T</span>
       <div class="dvg-label">Total Global GDP</div>
       <div class="dvg-sub">Annual World Output</div>
     </div>
     <div class="ratio-line">
       <span>Debt-to-Income Ratio</span>
-      <strong>340%</strong>
+      <strong>318%</strong>
     </div>
   </div>
 
@@ -1209,33 +829,33 @@
     <div class="debt-bar-row">
       <div class="debt-bar-label">USA</div>
       <div class="debt-bar-track"><div class="debt-bar-fill" data-width="100"></div></div>
-      <div class="debt-bar-value">$38 Trillion</div>
+      <div class="debt-bar-value">$36 Trillion</div>
     </div>
     <div class="debt-bar-row">
       <div class="debt-bar-label">China</div>
-      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="34"></div></div>
-      <div class="debt-bar-value">$13 Trillion</div>
+      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="42"></div></div>
+      <div class="debt-bar-value">$15 Trillion</div>
     </div>
     <div class="debt-bar-row">
       <div class="debt-bar-label">Japan</div>
-      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="24"></div></div>
-      <div class="debt-bar-value">$9 Trillion</div>
+      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="28"></div></div>
+      <div class="debt-bar-value">$10 Trillion</div>
     </div>
     <div class="debt-bar-row">
       <div class="debt-bar-label">India</div>
-      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="16"></div></div>
-      <div class="debt-bar-value">₹170 Lakh Crore</div>
+      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="19"></div></div>
+      <div class="debt-bar-value">₹185 Lakh Crore</div>
     </div>
     <div class="debt-bar-row">
       <div class="debt-bar-label">Russia</div>
-      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="8"></div></div>
-      <div class="debt-bar-value">$450 Billion</div>
+      <div class="debt-bar-track"><div class="debt-bar-fill" data-width="9"></div></div>
+      <div class="debt-bar-value">$500 Billion</div>
     </div>
   </div>
 
-  <p class="reveal">Note China — which lends money to developing nations through Belt and Road, which holds US Treasury bonds — is itself $13 trillion in debt. Russia, which operates outside most Western financial infrastructure, is still $450 billion in. <em>There are no exceptions.</em></p>
+  <p class="reveal">Note China — which lends money to developing nations through Belt and Road, which holds US Treasury bonds — is itself $15 trillion in debt. Russia, which operates outside most Western financial infrastructure, is still $500 billion in. <em>There are no exceptions.</em></p>
 
-  <div class="quote reveal">"Agar har desh karz mein hai — toh yeh paisa diya <em>kisne?</em>"<br><span style="font-size:14px; color: var(--silver); font-style: normal; font-family: Inter, sans-serif;">If every country is the borrower — who is the lender?</span></div>
+  <div class="quote reveal">"Agar har desh karz mein hai — toh yeh paisa diya <em>kisne?</em>"<br><span style="font-size:13px; color: var(--silver); font-style: normal; font-family: Inter, sans-serif;">If every country is the borrower — who is the lender?</span></div>
 
   <p class="reveal">This is not a rhetorical question. The answer destroys the conventional understanding of what money is. The money was not lent from some reserve of pre-existing wealth. It was <strong>created at the moment of borrowing</strong>. From nothing. This is the foundational mechanism — and it was built deliberately, over three centuries, by four people.</p>
 
@@ -1286,7 +906,7 @@
   <p class="reveal">The critical feature of this system: <strong>debt had a natural endpoint.</strong> It was either repaid or it was canceled — through default, death, or refusal. Either way, the slate could be wiped clean. No debt was eternal. Kings occasionally imprisoned lenders to avoid repayment. The lender bore all the risk, and the system had no permanence.</p>
 
   <div class="callout reveal">
-    <span class="callout-number" style="font-size:36px; color: var(--silver);">Pre-1694 Rule</span>
+    <span class="callout-number" style="font-size:34px; color: var(--silver);">Pre-1694 Rule</span>
     <div class="callout-body">Karz ka ek natural lifespan hota tha. Ya toh chuk jaata tha, ya mana kar diya jaata tha. Karz kabhi hamesha ke liye nahi hota tha. Yeh limitation — yeh natural death of debt — yahi thi woh cheez jo Paterson ne permanently remove kar di.</div>
   </div>
 
@@ -1307,7 +927,7 @@
     </div>
     <div class="cost-item">
       <div class="cost-item-icon">🔫</div>
-      <div class="cost-item-title">Weapons & Ammunition</div>
+      <div class="cost-item-title">Weapons &amp; Ammunition</div>
       <div class="cost-item-desc">Guns, swords, gunpowder — ordered from factories. Cash upfront. No credit from manufacturers.</div>
     </div>
     <div class="cost-item">
@@ -1473,9 +1093,9 @@
   </div>
 
   <div class="callout reveal">
-    <span class="callout-number" style="font-size:32px;">331 Years</span>
+    <span class="callout-number" style="font-size:30px;">332 Years</span>
     <div class="callout-label">British Government Debt — Never Once Repaid</div>
-    <div class="callout-body">Paterson died in 1719. He never became particularly wealthy. But the system he designed in 1694 is still running in 2025. The British government has never, not once, repaid its sovereign debt. It only grew. The same template now operates in every nation on earth. What Paterson built was not a loan. It was a permanent institution.</div>
+    <div class="callout-body">Paterson died in 1719. He never became particularly wealthy. But the system he designed in 1694 is still running today. The British government has never, not once, repaid its sovereign debt. It only grew. The same template now operates in every nation on earth. What Paterson built was not a loan. It was a permanent institution.</div>
   </div>
 </section>
 
@@ -1528,11 +1148,11 @@
     <div class="bond-before">
       <div class="bond-label">BEFORE ROTHSCHILD — Single Bond Unit</div>
       <div class="bond-main-number">£10,000</div>
-      <p style="margin-top:12px; font-size:13px; color: var(--silver); margin-bottom:0;">Only 20 people in England could afford this. Government held hostage to a handful of wealthy men. Fundraising: 1+ month. If 10 refused: government starved of capital.</p>
+      <p style="margin-top:11px; font-size:12.5px; color: var(--silver); margin-bottom:0;">Only 20 people in England could afford this. Government held hostage to a handful of wealthy men. Fundraising: 1+ month. If 10 refused: government starved of capital.</p>
     </div>
-    <div class="bond-label" style="padding: 12px 0 6px 0; font-size:10px; color: var(--gold);">AFTER ROTHSCHILD — Same Bond, Fragmented into 100 Units of £100</div>
+    <div class="bond-label" style="padding: 12px 0 5px; color: var(--gold);">AFTER ROTHSCHILD — Same Bond, Fragmented into 100 Units of £100</div>
     <div class="bond-after" id="bondMini"></div>
-    <p style="margin-top:12px; font-size:13px; color: var(--silver);">Now 2,000 people can participate. Doctor. Lawyer. Shopkeeper. Anyone with savings. Government raises capital in days, not months. Rothschild takes 2–3% commission on every unit sold.</p>
+    <p style="margin-top:11px; font-size:12.5px; color: var(--silver);">Now 2,000 people can participate. Doctor. Lawyer. Shopkeeper. Anyone with savings. Government raises capital in days, not months. Rothschild takes 2–3% commission on every unit sold.</p>
   </div>
 
   <h3 class="reveal">The Secondary Market — Liquidity Creates Participation</h3>
@@ -1575,7 +1195,7 @@
   <p class="reveal">British bonds were held by French investors. French bonds were held by German banks. German bonds were held by Austrian aristocracy. Austrian bonds by Russian nobles. If Britain defaults: British bonds become worthless. French investors, to avoid bankruptcy, panic-sell their German bonds at any price. German bond prices crash. German banks fail. They sell Austrian holdings. Austria collapses. The cascade continues.</p>
 
   <div class="callout reveal">
-    <span class="callout-number" style="font-size:32px;">The Option to Say No</span>
+    <span class="callout-number" style="font-size:30px;">The Option to Say No</span>
     <div class="callout-label">Was Surgically Removed</div>
     <div class="callout-body">After Rothschild, no single government could default without triggering a global financial collapse. Mana karne ka option hi khatam ho gaya tha. The choice to refuse — that had existed since the beginning of civilization — was gone. Governments were now permanently trapped. They had to pay interest — even if their people starved — because the alternative was global financial catastrophe. Yeh doosra jaal tha. Debt was no longer just permanent. It was inescapable.</div>
   </div>
@@ -1643,7 +1263,7 @@
   </div>
 
   <div class="gold-box reveal" style="background: var(--card);">
-    <span class="callout-number" style="font-size: 72px;">$45 Trillion</span>
+    <span class="callout-number" style="font-size: 68px;">$45 Trillion</span>
     <div class="gold-unit">Total Extracted from India — Utsa Patnaik's Calculation</div>
     <div class="gold-context">Economist Utsa Patnaik calculated the total value extracted from India during British colonial rule — at today's prices. If Britain repaid this today, every single Indian citizen would receive approximately ₹3–4 lakh. The mechanism: debt, trade asymmetry, and tax extraction — the exact system Paterson designed and Rothschild globalized, applied to a civilization for 200 years.</div>
   </div>
@@ -1695,7 +1315,7 @@
   <p class="reveal">JP Morgan — 70 years old, the most powerful private banker in America — personally organized the rescue. He summoned New York's top bankers to his private library, locked the doors, and refused to let anyone leave until they had collectively pledged enough capital to stabilize the failing banks. <strong>One man saved the entire American banking system.</strong></p>
 
   <div class="callout reveal">
-    <span class="callout-number" style="font-size:28px; color: var(--silver);">The Problem</span>
+    <span class="callout-number" style="font-size:26px; color: var(--silver);">The Problem</span>
     <div class="callout-body">Morgan was 70. He knew he could not do this again. And the next crisis might be worse. America needed a permanent institution to do what Morgan had done personally — act as a lender of last resort, inject capital in a crisis, prevent bank runs from becoming total collapse. They needed a central bank. But Americans hated central banks.</div>
   </div>
 
@@ -1818,7 +1438,7 @@
   <div class="callout reveal">
     <span class="callout-number">RBI</span>
     <div class="callout-label">Reserve Bank of India — Established 1935 — Same Architecture</div>
-    <div class="callout-body">The Reserve Bank of India runs the identical mechanism. Government needs money → issues bonds → RBI buys bonds → money is created → interest is paid from taxes. India's sovereign debt stands at over ₹170 lakh crore. It will never be repaid. It is not meant to be repaid. It is meant to grow — because as long as it grows, interest flows from taxpayers to bondholders. Forever.</div>
+    <div class="callout-body">The Reserve Bank of India runs the identical mechanism. Government needs money → issues bonds → RBI buys bonds → money is created → interest is paid from taxes. India's sovereign debt stands at over ₹185 lakh crore. It will never be repaid. It is not meant to be repaid. It is meant to grow — because as long as it grows, interest flows from taxpayers to bondholders. Forever.</div>
   </div>
 </section>
 
@@ -1929,7 +1549,7 @@
   </div>
 
   <div class="callout reveal">
-    <span class="callout-number" style="font-size:28px;">The Critical Distinction</span>
+    <span class="callout-number" style="font-size:26px;">The Critical Distinction</span>
     <div class="callout-label">Debt Was Not Forgiven. Only Restructured.</div>
     <div class="callout-body">Mexico owed 80 billion dollars. Before restructuring: repay in 5 years. After restructuring: repay in 15 years. The principal was identical. Not one dollar was forgiven. Only the timeline extended. New loans were used to pay old interest. The debt was made more manageable — specifically so it could continue indefinitely. This is Volcker's design: when debt becomes unpayable, don't forgive it. Restructure it. Keep the interest flowing. Take economic sovereignty as the price.</div>
   </div>
@@ -2052,8 +1672,8 @@
   <h3 class="reveal">Your Tax Pays Interest on Debt You Never Approved</h3>
 
   <div class="callout reveal">
-    <span class="callout-number">₹12 Lakh Crore</span>
-    <div class="callout-label">India's Annual Interest Payment — Budget 2024–25</div>
+    <span class="callout-number">₹12.86 Lakh Crore</span>
+    <div class="callout-label">India's Annual Interest Payment — Budget 2025–26</div>
     <div class="callout-body">Not principal repayment. Not development. Just interest. Every rupee of GST you pay on tea, biscuits, clothes, and phones. Every rupee of income tax cut from your salary. Every rupee of fuel tax. A significant portion goes directly to servicing debt — paid to bondholders who hold government securities. You pay taxes believing they build roads and schools. A large portion builds nothing. It services debt.</div>
   </div>
 
@@ -2112,7 +1732,7 @@
 
   <p class="reveal">And it is never one EMI. Laptop EMI. Bike EMI. Car EMI. AC, fridge, furniture EMI. Wedding loan. Vacation loan. Each one feels small — ₹2,000 here, ₹5,000 there. Add them together and half your salary — sometimes more — is pre-committed to debt servicing before you make a single discretionary decision.</p>
 
-  <div class="quote reveal">"Tum sochte ho — <em>tum cheezoon ke maalik ho.</em><br>Nahi. Cheezoon ne tumhe apna ghulaam bana liya hai."<br><span style="font-family:Inter,sans-serif; font-style:normal; font-size:13px; color:var(--silver);">You think you own the things. The things own you.</span></div>
+  <div class="quote reveal">"Tum sochte ho — <em>tum cheezoon ke maalik ho.</em><br>Nahi. Cheezoon ne tumhe apna ghulaam bana liya hai."<br><span style="font-family:Inter,sans-serif; font-style:normal; font-size:12.5px; color:var(--silver);">You think you own the things. The things own you.</span></div>
 
   <p class="reveal">You cannot leave the job that diminishes you. Because EMI. You cannot take the risk that could free you. Because EMI. You cannot start what only you can build. Because EMI. Your boss can insult you, demean you, and you must stay silent. Because EMI. <strong>EMI is the most effective mechanism for converting free people into permanent debtors.</strong> And it was designed that way.</p>
 
@@ -2120,7 +1740,7 @@
 
   <div class="holders reveal">
     <div class="holder-box">
-      <div class="holder-box-title">US — $38 Trillion Bond Holders</div>
+      <div class="holder-box-title">US — $36 Trillion Bond Holders</div>
       <div class="holder-item">
         <span class="holder-item-name">American Pension Funds</span>
         <span class="holder-item-action">Earn interest annually</span>
@@ -2143,7 +1763,7 @@
       </div>
     </div>
     <div class="holder-box">
-      <div class="holder-box-title">India — ₹170 Lakh Crore Bond Holders</div>
+      <div class="holder-box-title">India — ₹185 Lakh Crore Bond Holders</div>
       <div class="holder-item">
         <span class="holder-item-name">Indian Banks (SBI, etc.)</span>
         <span class="holder-item-action">Earn interest annually</span>
@@ -2164,12 +1784,12 @@
   </div>
 
   <div class="callout reveal">
-    <span class="callout-number" style="font-size:28px; color: var(--danger-light);">You Are On Both Sides</span>
+    <span class="callout-number" style="font-size:26px; color: var(--danger-lt);">You Are On Both Sides</span>
     <div class="callout-body">Your pension money, your SIP, your insurance premiums — these flow into mutual funds and banks that hold government bonds. So you are indirectly a bondholder. At the same time, your tax money services the government's interest payments on those same bonds. You are both the source of the interest payment and a fractional recipient of it — but the institutions in the middle capture the spread. Tum dono taraf se involve ho. Lekin faayda institutions ko ho raha hai jo bich mein hain.</div>
   </div>
 
   <div class="callout reveal" style="border-left-color: var(--gold);">
-    <span class="callout-number" style="font-size:28px;">$1 Trillion+</span>
+    <span class="callout-number" style="font-size:26px;">$1 Trillion+</span>
     <div class="callout-label">Annual wealth transfer — Taxpayers to Bondholders — from America alone</div>
     <div class="callout-body">Add Japan. Europe. India. Every country. Every year. This transfer never pauses. It is structural. It is invisible — because it is not called a tax. It is called "debt service." "Interest payment." The mechanism is identical. Workers pay. Institutions collect. The debt never shrinks.</div>
   </div>
@@ -2201,7 +1821,7 @@
       <div class="arch-year">1913 — AMERICA</div>
       <div class="arch-name">JP Morgan</div>
       <div class="arch-action">Made Debt Unlimited</div>
-      <div class="arch-body">The panic of 1907 created the political cover. Jekyll Island created the blueprint. The Federal Reserve removed the last physical constraint on money creation. Now government debt has no ceiling. Money is created from a keystroke. America's $38 trillion is the result.</div>
+      <div class="arch-body">The panic of 1907 created the political cover. Jekyll Island created the blueprint. The Federal Reserve removed the last physical constraint on money creation. Now government debt has no ceiling. Money is created from a keystroke. America's $36 trillion is the result.</div>
     </div>
     <div class="arch-card">
       <div class="arch-year">1979 — GLOBAL</div>
@@ -2212,8 +1832,8 @@
   </div>
 
   <div class="callout reveal" style="border-left-color: var(--gold);">
-    <span class="callout-number" style="font-size:28px;">The Business Model</span>
-    <div class="callout-label">$38 Trillion Is Not a Crisis. It Is the Product.</div>
+    <span class="callout-number" style="font-size:26px;">The Business Model</span>
+    <div class="callout-label">$36 Trillion Is Not a Crisis. It Is the Product.</div>
     <div class="callout-body">Every dollar of government debt is an asset on someone's balance sheet. That asset pays interest. The interest funds borrowing against that asset. As long as governments are trusted to pay interest — even if the principal is never repaid — the system runs indefinitely. The debt is not a problem that needs to be solved. It IS the business model. Yeh karz ek crisis nahi hai — yeh unka business model hai.</div>
   </div>
 </section>
@@ -2271,39 +1891,40 @@
 </div>
 
 <script>
-  // Spine dot position
+  // Progress bar
+  const bar = document.getElementById('progress-bar');
   const dot = document.getElementById('spineDot');
+
   window.addEventListener('scroll', () => {
     const scrolled = window.scrollY;
     const total = document.body.scrollHeight - window.innerHeight;
-    const pct = scrolled / total;
+    const pct = total > 0 ? scrolled / total : 0;
+    bar.style.width = (pct * 100) + '%';
     dot.style.top = (pct * 90 + 5) + '%';
-  });
+  }, { passive: true });
 
   // Reveal on scroll
   const reveals = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
+  const revealObs = new IntersectionObserver((entries) => {
     entries.forEach(e => {
-      if (e.isIntersecting) {
-        e.target.classList.add('visible');
-      }
+      if (e.isIntersecting) e.target.classList.add('visible');
     });
-  }, { threshold: 0.1 });
-  reveals.forEach(r => observer.observe(r));
+  }, { threshold: 0.08 });
+  reveals.forEach(r => revealObs.observe(r));
 
   // Debt bar animation
-  const barObserver = new IntersectionObserver((entries) => {
+  const barObs = new IntersectionObserver((entries) => {
     entries.forEach(e => {
       if (e.isIntersecting) {
-        e.target.querySelectorAll('.debt-bar-fill').forEach(bar => {
-          const w = bar.dataset.width;
-          setTimeout(() => { bar.style.width = w + '%'; }, 200);
+        e.target.querySelectorAll('.debt-bar-fill').forEach(b => {
+          const w = b.dataset.width;
+          setTimeout(() => { b.style.width = w + '%'; }, 200);
         });
       }
     });
   }, { threshold: 0.3 });
   const barSection = document.getElementById('debtBars');
-  if (barSection) barObserver.observe(barSection);
+  if (barSection) barObs.observe(barSection);
 
   // Bond mini grid
   const bondMini = document.getElementById('bondMini');
